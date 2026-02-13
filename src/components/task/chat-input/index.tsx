@@ -6,6 +6,7 @@ import { Square, ToggleLeft, ArrowUp, Bot } from "lucide-react";
 import type { SessionInfo } from "@/types/session";
 import { ModelSelector } from "./model-selector";
 import { ModeSelect } from "./mode-selector";
+import { McpSelector } from "./mcp-selector";
 import { CwdSelector } from "../chat-view/cwd-selector";
 import { getAgentIconByName } from "@/lib/agent-icon";
 
@@ -31,6 +32,9 @@ interface ChatInputProps {
   cwdReadOnly?: boolean;
   /** Agent 名称（只读，仅在有消息模式展示） */
   agentName?: string;
+  /** MCP Server 选择 */
+  selectedMcpIds?: string[];
+  onMcpChange?: (ids: string[]) => void;
   /** 是否为紧凑模式（已有消息时） */
   compact?: boolean;
 }
@@ -50,6 +54,8 @@ export const ChatInput = memo(function ChatInput({
   onCwdChange,
   cwdReadOnly,
   agentName,
+  selectedMcpIds,
+  onMcpChange,
   compact,
 }: ChatInputProps) {
   const [showSlashMenu, setShowSlashMenu] = useState(false);
@@ -202,6 +208,15 @@ export const ChatInput = memo(function ChatInput({
               })()}
               <span className="truncate max-w-[120px]">{agentName}</span>
             </div>
+          )}
+
+          {/* MCP Server 选择 */}
+          {onMcpChange && (
+            <McpSelector
+              selectedIds={selectedMcpIds ?? []}
+              onChange={onMcpChange}
+              disabled={isPrompting}
+            />
           )}
 
           {/* 模式选择 — 始终显示 */}

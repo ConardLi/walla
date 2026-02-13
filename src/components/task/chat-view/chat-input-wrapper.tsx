@@ -19,6 +19,8 @@ interface ChatInputWrapperProps {
   onCwdChange?: (cwd: string) => void;
   cwdReadOnly?: boolean;
   agentName?: string;
+  selectedMcpIds?: string[];
+  onMcpChange?: (ids: string[]) => void;
   className?: string;
   compact?: boolean;
 }

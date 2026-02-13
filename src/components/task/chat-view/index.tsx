@@ -1,18 +1,20 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState, useCallback } from "react";
 import { Bot, Loader2 } from "lucide-react";
 import { useChat } from "@/hooks/use-chat";
 import { useSessionStore } from "@/stores/session-store";
 import { useMessageStore } from "@/stores/message-store";
 import { useWorkspaceStore } from "@/stores/workspace-store";
 import { ChatInput } from "../chat-input";
+import { toIpcMcpConfigs } from "../chat-input/mcp-selector";
 import { AgentSelector } from "./agent-selector";
 import { CwdSelector } from "./cwd-selector";
 import { MessageList } from "./message-list";
 import { ChatInputWrapper } from "./chat-input-wrapper";
 import { ChatSkeleton } from "./chat-skeleton";
 import { RotatingText } from "@/components/ui/rotating-text";
+import { useMCPStore } from "@/stores/mcp-store";
 
 /**
  * 轻量 hook：只订阅"当前 session 是否有消息"这一布尔值，
@@ -47,6 +49,37 @@ export function ChatView() {
 
   const hasMessages = useHasMessages(chat.activeSessionId);
   const isPrompting = useIsPrompting(chat.activeSessionId);
+
+  const [selectedMcpIds, setSelectedMcpIds] = useState<string[]>([]);
+  const mcpServers = useMCPStore((s) => s.servers);
+
+  const handleMcpChange = useCallback(
+    async (ids: string[]) => {
+      setSelectedMcpIds(ids);
+      if (!chat.activeSessionId) return;
+
+      // 丢弃旧 session，用当前 cwd + 选中的 MCP 重新创建
+      const currentCwd = chat.activeSession?.cwd || directories[0] || "/tmp";
+      const oldId = chat.activeSessionId;
+      useSessionStore.setState((state) => ({
+        sessions: state.sessions.filter((s) => s.sessionId !== oldId),
+        activeSessionId: null,
+      }));
+      const mcpConfigs =
+        ids.length > 0 ? toIpcMcpConfigs(ids, mcpServers) : undefined;
+      await chat.createSession(currentCwd, {
+        mcpServers: mcpConfigs,
+        persist: false,
+      });
+    },
+    [
+      chat.activeSessionId,
+      chat.activeSession?.cwd,
+      directories,
+      mcpServers,
+      chat.createSession,
+    ],
+  );
 
   // 自动创建 session：agent ready 且无 activeSession 时，使用默认 cwd
   useEffect(() => {
@@ -156,6 +189,8 @@ export function ChatView() {
               onModelChange={(modelId: string) =>
                 chat.activeSessionId && setModel(chat.activeSessionId, modelId)
               }
+              selectedMcpIds={selectedMcpIds}
+              onMcpChange={handleMcpChange}
               isPrompting={false}
               className="max-w-2xl"
             />
@@ -191,6 +226,8 @@ export function ChatView() {
           onCwdChange={handleCwdChange}
           cwdReadOnly
           agentName={activeMeta?.agentName}
+          selectedMcpIds={selectedMcpIds}
+          onMcpChange={handleMcpChange}
           className="max-w-3xl mx-auto"
           compact
         />
