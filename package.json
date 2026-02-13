@@ -1,0 +1,99 @@
+{
+  "name": "walla",
+  "version": "0.1.0",
+  "private": true,
+  "main": "dist-electron/main.js",
+  "build": {
+    "appId": "com.walla.app",
+    "productName": "WALLA",
+    "directories": {
+      "output": "release"
+    },
+    "files": [
+      "dist/**/*",
+      "dist-electron/**/*"
+    ],
+    "mac": {
+      "icon": "public/common/icon.icns",
+      "category": "public.app-category.developer-tools"
+    },
+    "win": {
+      "icon": "public/common/icon.ico",
+      "target": "nsis"
+    },
+    "linux": {
+      "icon": "public/common/icon.png",
+      "target": "AppImage"
+    }
+  },
+  "scripts": {
+    "dev:next": "next dev --port 3000",
+    "dev:electron": "wait-on http://localhost:3000 && node scripts/build-electron.mjs && electron .",
+    "dev": "concurrently -n next,electron \"npm run dev:next\" \"npm run dev:electron\"",
+    "build:next": "next build",
+    "build:electron": "node scripts/build-electron.mjs",
+    "build": "npm run build:next && npm run build:electron",
+    "pack": "npm run build && electron-builder --dir",
+    "dist": "npm run build && electron-builder",
+    "test:health": "tsx test/01-health.ts",
+    "test:config": "tsx test/02-config.ts",
+    "test:project": "tsx test/03-project.ts",
+    "test:app": "tsx test/04-app.ts",
+    "test:session-crud": "tsx test/05-session-crud.ts",
+    "test:session-prompt": "tsx test/06-session-prompt.ts",
+    "test:file-search": "tsx test/07-file-search.ts",
+    "test:events": "tsx test/08-events.ts",
+    "test:path": "tsx test/09-path.ts",
+    "test:acp-init": "tsx test/acp/01-initialize.ts",
+    "test:acp-session": "tsx test/acp/02-session.ts",
+    "test:acp-prompt": "tsx test/acp/03-prompt.ts",
+    "test:acp-tool": "tsx test/acp/04-tool-call.ts",
+    "test:acp-cancel": "tsx test/acp/05-cancel.ts",
+    "test:acp-multi-turn": "tsx test/acp/06-multi-turn.ts",
+    "test:acp-resource": "tsx test/acp/07-resource-link.ts",
+    "test:acp-config": "tsx test/acp/08-config-option.ts",
+    "test:acp-multi-session": "tsx test/acp/09-multi-session.ts",
+    "test:acp-load": "tsx test/acp/10-load-session.ts",
+    "test:acp-updates": "tsx test/acp/11-update-types.ts",
+    "test:acp-fs": "tsx test/acp/12-filesystem.ts",
+    "test:acp-terminal": "tsx test/acp/13-terminal.ts",
+    "test:acp-slash": "tsx test/acp/14-slash-commands.ts"
+  },
+  "dependencies": {
+    "@agentclientprotocol/sdk": "^0.14.1",
+    "@modelcontextprotocol/sdk": "^1.26.0",
+    "class-variance-authority": "^0.7.1",
+    "clsx": "^2.1.1",
+    "date-fns": "^4.1.0",
+    "electron-store": "^11.0.2",
+    "lucide-react": "^0.468.0",
+    "next": "^15.1.0",
+    "next-themes": "^0.4.6",
+    "radix-ui": "^1.4.3",
+    "react": "^19.0.0",
+    "react-day-picker": "^9.13.2",
+    "react-dom": "^19.0.0",
+    "react-markdown": "^10.1.0",
+    "recharts": "^3.7.0",
+    "remark-gfm": "^4.0.1",
+    "shiki": "^3.22.0",
+    "sonner": "^2.0.7",
+    "tailwind-merge": "^2.6.0",
+    "zustand": "^5.0.0"
+  },
+  "devDependencies": {
+    "@tailwindcss/postcss": "^4.0.0",
+    "@types/node": "^22.0.0",
+    "@types/react": "^19.0.0",
+    "@types/react-dom": "^19.0.0",
+    "concurrently": "^9.1.0",
+    "electron": "^33.0.0",
+    "electron-builder": "^25.1.0",
+    "esbuild": "^0.27.3",
+    "postcss": "^8.4.49",
+    "tailwindcss": "^4.0.0",
+    "tsx": "latest",
+    "typescript": "^5.7.0",
+    "wait-on": "^8.0.0"
+  }
+}

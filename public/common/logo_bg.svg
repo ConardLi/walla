@@ -1,0 +1,8 @@
+<!-- WL Logo Style -->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="-80 -80 560 560" width="560" height="560">
+    <rect x="-30" y="-30" width="460" height="460" rx="100" ry="100" fill="rgb(50, 57, 78)" />
+    <path d="M 40 200 L 90 320 L 140 120 L 190 320 L 240 120 L 290 320 L 360 320" stroke="#FFFFFF" stroke-width="40"
+        fill="none" stroke-linecap="round" stroke-linejoin="round" transform="" />
+    <path d="M 40 120 L 90 120" stroke="#FFFFFF" stroke-width="40" fill="none" stroke-linecap="round"
+        stroke-linejoin="round" transform="" />
+</svg>

@@ -1,0 +1,7 @@
+<!-- WL Logo Style -->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 400" width="400" height="400">
+    <path d="M 40 200 L 90 320 L 140 120 L 190 320 L 240 120 L 290 320 L 360 320" stroke="#000000" stroke-width="40"
+        fill="none" stroke-linecap="round" stroke-linejoin="round" transform="" />
+    <path d="M 40 120 L 90 120" stroke="#000000" stroke-width="40" fill="none" stroke-linecap="round"
+        stroke-linejoin="round" transform="" />
+</svg>

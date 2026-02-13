@@ -1,0 +1,11 @@
+node_modules/
+out/
+dist-electron/
+release/
+.next/
+*.tsbuildinfo
+next-env.d.ts
+opencode.json
+.DS_Store
+doc/
+.windsurf/
