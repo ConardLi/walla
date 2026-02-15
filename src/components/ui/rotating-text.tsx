@@ -42,7 +42,7 @@ export function RotatingText() {
                 "opacity-0 -translate-y-full",
             )}
           >
-            <span className="text-4xl font-normal text-foreground tracking-tight leading-none text-center">
+            <span className="text-4xl font-normal text-foreground tracking-tight leading-none text-center font-serif">
               {phrase}
             </span>
           </div>

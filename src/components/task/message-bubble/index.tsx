@@ -110,7 +110,7 @@ function UserBubble({ message }: { message: Message }) {
 function AgentBubble({ message }: { message: Message }) {
   return (
     <div className="group/msg my-3">
-      <div className="text-[14px] prose prose-sm dark:prose-invert max-w-none leading-[1.75] tracking-[0.01em] wrap-break-word font-[system-ui,'Segoe_UI',Roboto,'Helvetica_Neue',Arial,sans-serif] [&_pre]:overflow-x-auto [&_pre]:max-w-full [&_code]:break-all [&_p]:my-2.5 [&_ul]:my-2 [&_ul]:list-disc [&_ul]:pl-6 [&_ol]:my-2 [&_ol]:list-decimal [&_ol]:pl-6 [&_li]:my-0.5 [&_li]:pl-1 [&_h1]:mt-5 [&_h1]:mb-2 [&_h2]:mt-4 [&_h2]:mb-2 [&_h3]:mt-3 [&_h3]:mb-1.5 [&_blockquote]:border-l-primary/50 [&_blockquote]:text-muted-foreground">
+      <div className="text-[15px] prose prose-sm dark:prose-invert max-w-none leading-[1.8] tracking-[0.01em] wrap-break-word font-serif [&_pre]:overflow-x-auto [&_pre]:max-w-full [&_pre]:font-mono [&_code]:break-all [&_code]:font-mono [&_p]:my-2.5 [&_ul]:my-2 [&_ul]:list-disc [&_ul]:pl-6 [&_ol]:my-2 [&_ol]:list-decimal [&_ol]:pl-6 [&_li]:my-0.5 [&_li]:pl-1 [&_h1]:mt-5 [&_h1]:mb-2 [&_h1]:font-sans [&_h2]:mt-4 [&_h2]:mb-2 [&_h2]:font-sans [&_h3]:mt-3 [&_h3]:mb-1.5 [&_h3]:font-sans [&_blockquote]:border-l-primary/50 [&_blockquote]:text-muted-foreground [&_blockquote]:italic">
         <MarkdownRenderer content={message.content} />
       </div>
       {message.isStreaming ? (
