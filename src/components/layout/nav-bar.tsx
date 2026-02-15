@@ -46,8 +46,8 @@ export function NavBar() {
   return (
     <aside
       className={cn(
-        "w-12 border-r flex flex-col shrink-0 bg-muted/30 transition-all duration-300 ease-in-out overflow-hidden",
-        isHidden && "w-0 border-r-0",
+        "w-12 border-r flex flex-col shrink-0 bg-muted/30 transition-all duration-300 ease-in-out",
+        isHidden && "w-0 border-r-0 overflow-hidden",
       )}
     >
       {/* 上半部分 */}
