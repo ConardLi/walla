@@ -54,6 +54,7 @@ interface ServerCardProps {
 export function ServerCard({ server, onEdit }: ServerCardProps) {
   const [expanded, setExpanded] = useState(false);
   const runtime = useMCPStore((s) => selectMCPRuntime(s, server.id));
+  const cachedRuntime = useMCPStore((s) => s.cachedRuntimes[server.id]);
   const connectServer = useMCPStore((s) => s.connectServer);
   const disconnectServer = useMCPStore((s) => s.disconnectServer);
   const removeServer = useMCPStore((s) => s.removeServer);
@@ -62,9 +63,13 @@ export function ServerCard({ server, onEdit }: ServerCardProps) {
   const sc = statusConfig[runtime.status];
   const isConnected = runtime.status === "connected";
   const isConnecting = runtime.status === "connecting";
-  const toolCount = runtime.tools.length;
-  const promptCount = runtime.prompts.length;
-  const resourceCount = runtime.resources.length;
+
+  // 已连接时使用实时数据，未连接时使用缓存数据
+  const displayRuntime = isConnected ? runtime : cachedRuntime;
+  const toolCount = displayRuntime?.tools.length ?? 0;
+  const promptCount = displayRuntime?.prompts.length ?? 0;
+  const resourceCount = displayRuntime?.resources.length ?? 0;
+  const hasCache = !!cachedRuntime;
 
   return (
     <div className="border rounded-lg overflow-hidden">
@@ -73,7 +78,7 @@ export function ServerCard({ server, onEdit }: ServerCardProps) {
         <button
           onClick={() => setExpanded(!expanded)}
           className="shrink-0 p-0.5 hover:bg-muted rounded transition-colors"
-          disabled={!isConnected}
+          disabled={!isConnected && !hasCache}
         >
           {expanded ? (
             <ChevronDown className="h-4 w-4" />
@@ -89,7 +94,10 @@ export function ServerCard({ server, onEdit }: ServerCardProps) {
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2">
             <span className="text-sm font-medium truncate">{server.name}</span>
-            <Badge variant="outline" className="text-[10px] px-1.5 py-0 shrink-0">
+            <Badge
+              variant="outline"
+              className="text-[10px] px-1.5 py-0 shrink-0"
+            >
               {server.transportType === "stdio" ? (
                 <Terminal className="h-2.5 w-2.5 mr-1" />
               ) : (
@@ -105,7 +113,7 @@ export function ServerCard({ server, onEdit }: ServerCardProps) {
               />
               {sc.label}
             </span>
-            {isConnected && (toolCount > 0 || promptCount > 0 || resourceCount > 0) && (
+            {(toolCount > 0 || promptCount > 0 || resourceCount > 0) && (
               <span className="text-xs text-muted-foreground">
                 {toolCount > 0 && `${toolCount} 工具`}
                 {promptCount > 0 && ` · ${promptCount} 提示词`}
@@ -186,12 +194,12 @@ export function ServerCard({ server, onEdit }: ServerCardProps) {
       </div>
 
       {/* 展开详情 */}
-      {expanded && isConnected && (
+      {expanded && displayRuntime && (
         <div className="px-4 pb-3 border-t pt-3">
           <ServerDetail
-            tools={runtime.tools}
-            prompts={runtime.prompts}
-            resources={runtime.resources}
+            tools={displayRuntime.tools}
+            prompts={displayRuntime.prompts}
+            resources={displayRuntime.resources}
           />
         </div>
       )}

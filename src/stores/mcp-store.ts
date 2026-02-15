@@ -14,12 +14,15 @@ import type {
 
 const STORAGE_NAMESPACE = "mcp";
 const STORAGE_KEY = "servers";
+const CACHED_RUNTIMES_KEY = "cached_runtimes";
 
 interface MCPState {
   /** 已保存的 MCP Server 配置列表 */
   servers: MCPServerConfig[];
-  /** 运行时状态 serverId → runtime */
+  /** 运行时状态 serverId → runtime（内存） */
   runtimes: Record<string, MCPServerRuntime>;
+  /** 缓存的运行时信息 serverId → runtime（持久化，用于离线回显） */
+  cachedRuntimes: Record<string, Omit<MCPServerRuntime, "status" | "error">>;
   /** 是否已加载 */
   loaded: boolean;
 
@@ -84,9 +87,41 @@ async function persistServers(servers: MCPServerConfig[]) {
   }
 }
 
+async function persistCachedRuntimes(
+  cachedRuntimes: Record<string, Omit<MCPServerRuntime, "status" | "error">>,
+) {
+  try {
+    await ipc.storageSet({
+      namespace: STORAGE_NAMESPACE,
+      key: CACHED_RUNTIMES_KEY,
+      value: cachedRuntimes,
+    });
+  } catch (err) {
+    console.error("[MCP Store] Failed to persist cached runtimes:", err);
+  }
+}
+
+async function loadCachedRuntimes(): Promise<
+  Record<string, Omit<MCPServerRuntime, "status" | "error">>
+> {
+  try {
+    const res = await ipc.storageGet({
+      namespace: STORAGE_NAMESPACE,
+      key: CACHED_RUNTIMES_KEY,
+    });
+    return (res.value ?? {}) as Record<
+      string,
+      Omit<MCPServerRuntime, "status" | "error">
+    >;
+  } catch {
+    return {} as Record<string, Omit<MCPServerRuntime, "status" | "error">>;
+  }
+}
+
 export const useMCPStore = create<MCPState>((set, get) => ({
   servers: [],
   runtimes: {},
+  cachedRuntimes: {},
   loaded: false,
 
   loadServers: async () => {
@@ -98,7 +133,8 @@ export const useMCPStore = create<MCPState>((set, get) => ({
       const servers = Array.isArray(res.value)
         ? (res.value as MCPServerConfig[])
         : [];
-      set({ servers, loaded: true });
+      const cachedRuntimes = await loadCachedRuntimes();
+      set({ servers, cachedRuntimes, loaded: true });
     } catch {
       set({ loaded: true });
     }
@@ -133,9 +169,20 @@ export const useMCPStore = create<MCPState>((set, get) => ({
 
     set((state) => {
       const servers = [...state.servers, serverWithTime];
+      const cachedRuntimes = {
+        ...state.cachedRuntimes,
+        [config.id]: {
+          tools: result.tools,
+          prompts: result.prompts,
+          resources: result.resources,
+          serverInfo: result.serverInfo,
+        },
+      };
       persistServers(servers);
+      persistCachedRuntimes(cachedRuntimes);
       return {
         servers,
+        cachedRuntimes,
         runtimes: updateRuntime(state.runtimes, config.id, {
           status: "connected",
           tools: result.tools,
@@ -184,9 +231,20 @@ export const useMCPStore = create<MCPState>((set, get) => ({
       const servers = state.servers.map((s) =>
         s.id === config.id ? serverWithTime : s,
       );
+      const cachedRuntimes = {
+        ...state.cachedRuntimes,
+        [config.id]: {
+          tools: result.tools,
+          prompts: result.prompts,
+          resources: result.resources,
+          serverInfo: result.serverInfo,
+        },
+      };
       persistServers(servers);
+      persistCachedRuntimes(cachedRuntimes);
       return {
         servers,
+        cachedRuntimes,
         runtimes: updateRuntime(state.runtimes, config.id, {
           status: "connected",
           tools: result.tools,
@@ -237,9 +295,20 @@ export const useMCPStore = create<MCPState>((set, get) => ({
       const servers = state.servers.map((s) =>
         s.id === serverId ? { ...s, lastConnectedAt: Date.now() } : s,
       );
+      const cachedRuntimes = {
+        ...state.cachedRuntimes,
+        [serverId]: {
+          tools: result.tools,
+          prompts: result.prompts,
+          resources: result.resources,
+          serverInfo: result.serverInfo,
+        },
+      };
       persistServers(servers);
+      persistCachedRuntimes(cachedRuntimes);
       return {
         servers,
+        cachedRuntimes,
         runtimes: updateRuntime(state.runtimes, serverId, {
           status: "connected",
           tools: result.tools,
@@ -274,13 +343,26 @@ export const useMCPStore = create<MCPState>((set, get) => ({
   refreshServer: async (serverId) => {
     const result = await ipc.mcpRefresh({ serverId });
     if (result.success) {
-      set((state) => ({
-        runtimes: updateRuntime(state.runtimes, serverId, {
-          tools: result.tools,
-          prompts: result.prompts,
-          resources: result.resources,
-        }),
-      }));
+      set((state) => {
+        const cachedRuntimes = {
+          ...state.cachedRuntimes,
+          [serverId]: {
+            ...state.cachedRuntimes[serverId],
+            tools: result.tools,
+            prompts: result.prompts,
+            resources: result.resources,
+          },
+        };
+        persistCachedRuntimes(cachedRuntimes);
+        return {
+          cachedRuntimes,
+          runtimes: updateRuntime(state.runtimes, serverId, {
+            tools: result.tools,
+            prompts: result.prompts,
+            resources: result.resources,
+          }),
+        };
+      });
     }
   },
 }));
