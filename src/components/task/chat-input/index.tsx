@@ -161,7 +161,7 @@ export const ChatInput = memo(function ChatInput({
       )}
 
       {/* 卡片式输入框 */}
-      <div className="rounded-xl border bg-background shadow-sm focus-within:ring-1 focus-within:ring-ring transition-shadow">
+      <div className="rounded-3xl border bg-chat-background shadow-sm focus-within:ring-1 focus-within:ring-ring focus-within:shadow-md transition-all">
         {/* 输入区 */}
         <div className="px-4 pt-3 pb-2">
           <textarea

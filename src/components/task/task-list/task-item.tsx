@@ -5,6 +5,7 @@ import { cn } from "@/lib/utils";
 import { Star, X } from "lucide-react";
 import type { SessionMeta } from "@/types/session";
 import type { TaskListGroupMode } from "@/types/nav";
+import type { TaskListViewMode } from "@/stores/nav-store";
 import {
   Tooltip,
   TooltipContent,
@@ -16,6 +17,7 @@ interface TaskItemProps {
   meta: SessionMeta;
   isActive: boolean;
   groupMode: TaskListGroupMode;
+  viewMode: TaskListViewMode;
   onSwitch: () => void;
   onRemove: () => void;
   onToggleFavorite: () => void;
@@ -25,6 +27,7 @@ export function TaskItem({
   meta,
   isActive,
   groupMode,
+  viewMode,
   onSwitch,
   onRemove,
   onToggleFavorite,
@@ -99,12 +102,14 @@ export function TaskItem({
           >
             {/* 左侧文字区 */}
             <div className="flex-1 min-w-0">
-              <div className="truncate font-medium text-sm text-foreground/90">
+              <div className="truncate text-sm text-foreground/90">
                 {meta.title ?? meta.sessionId.slice(0, 12) + "..."}
               </div>
-              <div className="flex items-center gap-1.5 mt-0.5 text-xs text-muted-foreground/80">
-                {getDetailContent()}
-              </div>
+              {viewMode === "normal" && (
+                <div className="flex items-center gap-1.5 mt-0.5 text-xs text-muted-foreground/80">
+                  {getDetailContent()}
+                </div>
+              )}
             </div>
             {/* 右侧操作按钮 */}
             <div

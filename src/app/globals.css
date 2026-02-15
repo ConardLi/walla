@@ -16,6 +16,9 @@
   --popover: oklch(0.99 0.006 85);
   --popover-foreground: oklch(0.18 0.005 60);
   
+  /* Chat area - warmer white background */
+  --chat-background: rgb(253, 252, 251);
+  
   /* Primary accent - Rust orange/terracotta */
   --primary: oklch(0.52 0.14 35);
   --primary-foreground: oklch(0.98 0.008 85);
@@ -61,6 +64,9 @@
   --card-foreground: oklch(0.94 0.008 85);
   --popover: oklch(0.20 0.005 60);
   --popover-foreground: oklch(0.94 0.008 85);
+  
+  /* Chat area - dark background */
+  --chat-background: oklch(0.18 0.005 60);
   
   /* Primary accent - Lighter rust orange for dark mode */
   --primary: oklch(0.65 0.14 35);
@@ -129,6 +135,7 @@
   --color-claude-accent: var(--claude-accent);
   --color-claude-blue: var(--claude-blue);
   --color-claude-green: var(--claude-green);
+  --color-chat-background: var(--chat-background);
   --radius-sm: calc(var(--radius) - 4px);
   --radius-md: calc(var(--radius) - 2px);
   --radius-lg: var(--radius);

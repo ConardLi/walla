@@ -112,7 +112,7 @@ export function AppShell() {
       <TitleBar />
       <div className="flex flex-1 overflow-hidden">
         <NavBar />
-        <main className="flex-1 overflow-hidden">
+        <main className="flex-1 overflow-hidden bg-chat-background">
           <PageRouter />
         </main>
       </div>

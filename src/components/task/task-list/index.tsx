@@ -5,7 +5,7 @@ import { cn } from "@/lib/utils";
 import { useSessionStore } from "@/stores/session-store";
 import { useAgentStore, selectAnyReady } from "@/stores/agent-store";
 import { useWorkspaceStore } from "@/stores/workspace-store";
-import { useNavStore } from "@/stores/nav-store";
+import { useNavStore, type TaskListViewMode } from "@/stores/nav-store";
 import {
   Plus,
   FolderOpen,
@@ -14,6 +14,8 @@ import {
   Loader2,
   Star,
   Search,
+  List,
+  AlignLeft,
 } from "lucide-react";
 import {
   Tooltip,
@@ -29,6 +31,8 @@ import { groupByTime, groupByWorkspace, groupByAgent } from "./task-list-utils";
 export function TaskList() {
   const groupMode = useNavStore((s) => s.taskListGroupMode);
   const setGroupMode = useNavStore((s) => s.setTaskListGroupMode);
+  const viewMode = useNavStore((s) => s.taskListViewMode);
+  const setViewMode = useNavStore((s) => s.setTaskListViewMode);
   const [searchOpen, setSearchOpen] = useState(false);
   const sessionMetas = useSessionStore((s) => s.sessionMetas);
   const activeSessionId = useSessionStore((s) => s.activeSessionId);
@@ -108,6 +112,31 @@ export function TaskList() {
             <TooltipTrigger asChild>
               <button
                 type="button"
+                onClick={() =>
+                  setViewMode(viewMode === "normal" ? "compact" : "normal")
+                }
+                className={cn(
+                  "p-1 rounded transition-colors",
+                  viewMode === "normal"
+                    ? "text-foreground bg-accent"
+                    : "text-muted-foreground hover:text-foreground",
+                )}
+              >
+                {viewMode === "normal" ? (
+                  <AlignLeft className="h-4 w-4" />
+                ) : (
+                  <List className="h-4 w-4" />
+                )}
+              </button>
+            </TooltipTrigger>
+            <TooltipContent side="bottom" className="text-xs">
+              {viewMode === "normal" ? "简化模式" : "详细模式"}
+            </TooltipContent>
+          </Tooltip>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <button
+                type="button"
                 onClick={() => setSearchOpen(true)}
                 className="p-1 rounded text-muted-foreground hover:text-foreground transition-colors"
               >
@@ -155,7 +184,6 @@ export function TaskList() {
                   <div className="px-2 py-1 flex items-center gap-2">
                     <Separator className="flex-1" />
                     <div className="flex items-center gap-1 text-xs font-semibold text-muted-foreground/80 shrink-0">
-                      <Star className="h-3 w-3 text-amber-400 fill-amber-400" />
                       收藏
                     </div>
                     <Separator className="flex-1" />
@@ -167,6 +195,7 @@ export function TaskList() {
                         meta={meta}
                         isActive={activeSessionId === meta.sessionId}
                         groupMode={groupMode}
+                        viewMode={viewMode}
                         onSwitch={() => switchToSession(meta.sessionId)}
                         onRemove={() => removeSession(meta.sessionId)}
                         onToggleFavorite={() => toggleFavorite(meta.sessionId)}
@@ -192,6 +221,7 @@ export function TaskList() {
                         meta={meta}
                         isActive={activeSessionId === meta.sessionId}
                         groupMode={groupMode}
+                        viewMode={viewMode}
                         onSwitch={() => switchToSession(meta.sessionId)}
                         onRemove={() => removeSession(meta.sessionId)}
                         onToggleFavorite={() => toggleFavorite(meta.sessionId)}

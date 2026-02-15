@@ -25,7 +25,7 @@ export function BootScreen({
   const isGrid = connectingAgents.length > 4;
 
   return (
-    <div className="h-screen w-screen flex flex-col items-center justify-center bg-background relative overflow-hidden">
+    <div className="h-screen w-screen flex flex-col items-center justify-center bg-chat-background relative overflow-hidden">
       {/* 注入动画样式 - 仅保留 AgentConnectionRow 需要的 shimmer */}
       <style jsx global>{`
         @keyframes shimmer {

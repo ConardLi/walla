@@ -11,7 +11,7 @@ export function TaskPage() {
     <div className="flex h-full overflow-hidden">
       {/* 左侧任务列表 */}
       {!collapsed && (
-        <div className="w-[260px] border-r flex flex-col shrink-0">
+        <div className="w-[260px] border-r flex flex-col shrink-0 bg-sidebar-background">
           <TaskList />
         </div>
       )}

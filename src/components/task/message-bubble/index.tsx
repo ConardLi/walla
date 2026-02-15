@@ -28,7 +28,7 @@ function ThoughtBubble({ message }: { message: Message }) {
     <div className="my-2">
       <button
         onClick={() => setManualExpanded(!expanded)}
-        className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors py-1"
+        className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors py-1 font-sans"
       >
         {expanded ? (
           <ChevronDown className="h-3 w-3" />
@@ -41,8 +41,8 @@ function ThoughtBubble({ message }: { message: Message }) {
         <span>{isThinking ? "思考中..." : "思考过程"}</span>
       </button>
       {expanded && (
-        <div className="ml-5 mt-1 pl-3 border-l-2 border-amber-500/30">
-          <div className="text-sm text-muted-foreground whitespace-pre-wrap">
+        <div className="ml-5 mt-1 pl-3 border-l-2 border-primary/40">
+          <div className="text-[15px] text-muted-foreground whitespace-pre-wrap leading-[1.8] font-serif italic">
             {message.content}
           </div>
         </div>
