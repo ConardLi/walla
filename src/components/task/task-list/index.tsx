@@ -181,12 +181,10 @@ export function TaskList() {
               {/* 收藏分组 */}
               {favoritedMetas.length > 0 && (
                 <div>
-                  <div className="px-2 py-1 flex items-center gap-2">
-                    <Separator className="flex-1" />
-                    <div className="flex items-center gap-1 text-xs font-semibold text-muted-foreground/80 shrink-0">
+                  <div className="px-2 py-4 flex items-center gap-2">
+                    <div className="flex items-center gap-1 text-xs text-muted-foreground/90 shrink-0">
                       收藏
                     </div>
-                    <Separator className="flex-1" />
                   </div>
                   <div className="space-y-0.5">
                     {favoritedMetas.map((meta) => (
@@ -207,12 +205,10 @@ export function TaskList() {
               {/* 普通分组 */}
               {groupKeys.map((groupKey) => (
                 <div key={groupKey}>
-                  <div className="px-2 py-1 flex items-center gap-2">
-                    <Separator className="flex-1" />
-                    <span className="text-xs font-semibold text-muted-foreground/80 shrink-0">
+                  <div className="px-2 py-4 flex items-center gap-2">
+                    <span className="text-xs text-muted-foreground/90 shrink-0">
                       {groupKey}
                     </span>
-                    <Separator className="flex-1" />
                   </div>
                   <div className="space-y-0.5">
                     {groups[groupKey].map((meta) => (

@@ -91,7 +91,7 @@ export function TaskItem({
         <TooltipTrigger asChild>
           <div
             className={cn(
-              "flex items-center gap-1 w-full px-2 py-1.5 rounded-md text-sm transition-colors cursor-pointer",
+              "flex items-center gap-1 w-full px-2 py-1 rounded-md text-sm transition-colors cursor-pointer",
               isActive
                 ? "bg-accent text-foreground"
                 : "text-muted-foreground hover:bg-accent/50 hover:text-foreground",
@@ -102,7 +102,7 @@ export function TaskItem({
           >
             {/* 左侧文字区 */}
             <div className="flex-1 min-w-0">
-              <div className="truncate text-sm text-foreground/90">
+              <div className="truncate text-sm text-foreground">
                 {meta.title ?? meta.sessionId.slice(0, 12) + "..."}
               </div>
               {viewMode === "normal" && (
