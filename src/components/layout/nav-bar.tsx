@@ -41,10 +41,15 @@ export function NavBar() {
   const setActivePage = useNavStore((s) => s.setActivePage);
   const collapsed = useNavStore((s) => s.taskListCollapsed);
 
-  if (activePage === "task" && collapsed) return null;
+  const isHidden = activePage === "task" && collapsed;
 
   return (
-    <aside className="w-12 border-r flex flex-col shrink-0 bg-muted/30">
+    <aside
+      className={cn(
+        "w-12 border-r flex flex-col shrink-0 bg-muted/30 transition-all duration-300 ease-in-out overflow-hidden",
+        isHidden && "w-0 border-r-0",
+      )}
+    >
       {/* 上半部分 */}
       <div className="flex-1 flex flex-col items-center gap-1 pt-2">
         {topItems.map((item) => (
