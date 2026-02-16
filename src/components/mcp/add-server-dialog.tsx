@@ -21,6 +21,7 @@ import {
 } from "./use-json-parser";
 import { EXAMPLE_JSON_STDIO, EXAMPLE_JSON_SSE } from "./constants";
 import type { MCPServerConfig } from "@/types/mcp";
+import type { RecommendedMCPServer } from "@/constants/recommended-mcp-servers";
 import { useMCPStore } from "@/stores/mcp-store";
 
 type TabMode = "form" | "json";
@@ -29,12 +30,14 @@ interface AddServerDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   editServer?: MCPServerConfig | null;
+  recommendedServer?: RecommendedMCPServer | null;
 }
 
 export function AddServerDialog({
   open,
   onOpenChange,
   editServer,
+  recommendedServer,
 }: AddServerDialogProps) {
   const [tab, setTab] = useState<TabMode>("json");
   const [formData, setFormData] = useState<ServerFormData>(
@@ -48,12 +51,18 @@ export function AddServerDialog({
   const updateServer = useMCPStore((s) => s.updateServer);
 
   const isEdit = !!editServer;
+  const isRecommended = !!recommendedServer;
 
-  // editServer 或 open 变化时重新初始化
+  // editServer/recommendedServer 或 open 变化时重新初始化
   useEffect(() => {
     if (open) {
       if (editServer) {
         const fd = configToFormData(editServer);
+        setFormData(fd);
+        setJsonInput(formDataToJson(fd));
+        setTab("form");
+      } else if (recommendedServer) {
+        const fd = recommendedToFormData(recommendedServer);
         setFormData(fd);
         setJsonInput(formDataToJson(fd));
         setTab("form");
@@ -65,7 +74,7 @@ export function AddServerDialog({
       setError(null);
       setConnecting(false);
     }
-  }, [open, editServer]);
+  }, [open, editServer, recommendedServer]);
 
   const resetState = useCallback(() => {
     setFormData(getDefaultFormData());
@@ -99,7 +108,11 @@ export function AddServerDialog({
         }
         const s = result.servers[0];
         config = {
-          id: editServer?.id ?? `mcp-${Date.now()}`,
+          id:
+            editServer?.id ??
+            (recommendedServer
+              ? `${recommendedServer.id}-${Date.now()}`
+              : `mcp-${Date.now()}`),
           name: s.name,
           description: s.description,
           transportType: s.transportType,
@@ -134,7 +147,11 @@ export function AddServerDialog({
         }
 
         config = {
-          id: editServer?.id ?? `mcp-${Date.now()}`,
+          id:
+            editServer?.id ??
+            (recommendedServer
+              ? `${recommendedServer.id}-${Date.now()}`
+              : `mcp-${Date.now()}`),
           name: formData.name.trim(),
           description: formData.description.trim() || undefined,
           transportType: formData.transportType,
@@ -174,6 +191,7 @@ export function AddServerDialog({
     }
   }, [
     tab,
+    recommendedServer,
     jsonInput,
     formData,
     editServer,
@@ -188,12 +206,18 @@ export function AddServerDialog({
       <DialogContent className="sm:max-w-2xl max-h-[85vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>
-            {isEdit ? "编辑 MCP Server" : "添加 MCP Server"}
+            {isEdit
+              ? "编辑 MCP Server"
+              : isRecommended
+                ? `添加推荐 Server: ${recommendedServer.name}`
+                : "添加 MCP Server"}
           </DialogTitle>
           <DialogDescription>
             {isEdit
               ? "修改配置后将重新连接"
-              : "添加后将自动尝试连接，连接成功后保存配置"}
+              : isRecommended
+                ? "配置已预填，请检查并填写必需参数（标记 ${YOUR_XXX} 的字段）"
+                : "添加后将自动尝试连接，连接成功后保存配置"}
           </DialogDescription>
         </DialogHeader>
 
@@ -295,5 +319,21 @@ function configToFormData(config: MCPServerConfig): ServerFormData {
       ? Object.entries(config.env).map(([key, value]) => ({ key, value }))
       : [],
     url: config.url ?? "",
+  };
+}
+
+function recommendedToFormData(
+  recommended: RecommendedMCPServer,
+): ServerFormData {
+  return {
+    name: recommended.name,
+    description: recommended.description,
+    transportType: recommended.transportType,
+    command: recommended.command ?? "",
+    args: recommended.args ?? [],
+    env: recommended.env
+      ? Object.entries(recommended.env).map(([key, value]) => ({ key, value }))
+      : [],
+    url: recommended.url ?? "",
   };
 }
