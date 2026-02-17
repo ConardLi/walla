@@ -126,6 +126,10 @@ export const ChatInput = memo(function ChatInput({
     }
     if (e.key === "Enter" && !e.shiftKey) {
       e.preventDefault();
+      // 发送前重置输入框高度
+      if (textareaRef.current) {
+        textareaRef.current.style.height = "auto";
+      }
       onSend();
     }
   };

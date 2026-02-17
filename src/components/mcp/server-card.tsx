@@ -15,36 +15,35 @@ import {
   Terminal,
   Globe,
   Server,
+  Wrench,
+  MessageSquare,
+  FileText,
+  AlertCircle,
 } from "lucide-react";
 import { useMCPStore, selectMCPRuntime } from "@/stores/mcp-store";
 import type { MCPServerConfig, MCPServerStatus } from "@/types/mcp";
 import { ServerDetail } from "./server-detail";
+import { cn } from "@/lib/utils";
 
-const statusConfig: Record<
-  MCPServerStatus,
-  { label: string; color: string; dotColor: string }
-> = {
-  disconnected: {
-    label: "未连接",
-    color: "text-muted-foreground",
-    dotColor: "bg-muted-foreground",
-  },
-  connecting: {
-    label: "连接中",
-    color: "text-blue-500",
-    dotColor: "bg-blue-500",
-  },
-  connected: {
-    label: "已连接",
-    color: "text-green-500",
-    dotColor: "bg-green-500",
-  },
-  error: {
-    label: "连接失败",
-    color: "text-destructive",
-    dotColor: "bg-destructive",
-  },
-};
+const statusConfig: Record<MCPServerStatus, { label: string; color: string }> =
+  {
+    disconnected: {
+      label: "未测试",
+      color: "text-muted-foreground",
+    },
+    connecting: {
+      label: "测试中",
+      color: "text-blue-600 dark:text-blue-400",
+    },
+    connected: {
+      label: "连接正常",
+      color: "text-green-600 dark:text-green-400",
+    },
+    error: {
+      label: "连接失败",
+      color: "text-destructive",
+    },
+  };
 
 interface ServerCardProps {
   server: MCPServerConfig;
@@ -70,137 +69,173 @@ export function ServerCard({ server, onEdit }: ServerCardProps) {
   const promptCount = displayRuntime?.prompts.length ?? 0;
   const resourceCount = displayRuntime?.resources.length ?? 0;
   const hasCache = !!cachedRuntime;
+  const hasContent = toolCount > 0 || promptCount > 0 || resourceCount > 0;
 
   return (
-    <div className="border rounded-lg overflow-hidden">
-      {/* 头部 */}
-      <div className="px-4 py-3 flex items-center gap-3">
-        <button
-          onClick={() => setExpanded(!expanded)}
-          className="shrink-0 p-0.5 hover:bg-muted rounded transition-colors"
-          disabled={!isConnected && !hasCache}
-        >
-          {expanded ? (
-            <ChevronDown className="h-4 w-4" />
-          ) : (
-            <ChevronRight className="h-4 w-4" />
-          )}
-        </button>
+    <div
+      className={cn(
+        "group border rounded-xl bg-card transition-all duration-200 hover:shadow-sm",
+        expanded && "ring-1 ring-primary/20 shadow-sm",
+      )}
+    >
+      <div className="p-4 relative">
+        <div className="flex items-start gap-4">
+          {/* 图标区域 */}
+          <div className="shrink-0 h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center text-primary">
+            {isConnecting ? (
+              <Loader2 className="h-5 w-5 animate-spin" />
+            ) : (
+              <Server className="h-5 w-5" />
+            )}
+          </div>
 
-        <div className="shrink-0">
-          <Server className="h-5 w-5 text-muted-foreground" />
-        </div>
-
-        <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-2">
-            <span className="text-sm font-medium truncate">{server.name}</span>
-            <Badge
-              variant="outline"
-              className="text-[10px] px-1.5 py-0 shrink-0"
-            >
-              {server.transportType === "stdio" ? (
-                <Terminal className="h-2.5 w-2.5 mr-1" />
-              ) : (
-                <Globe className="h-2.5 w-2.5 mr-1" />
+          {/* 主要内容 */}
+          <div className="flex-1 min-w-0 pt-0.5">
+            <div className="flex items-center gap-2 mb-1.5">
+              <h3 className="font-medium text-sm truncate">{server.name}</h3>
+              <Badge
+                variant="secondary"
+                className="h-5 px-1.5 text-[10px] font-normal text-muted-foreground"
+              >
+                {server.transportType === "stdio" ? (
+                  <Terminal className="h-3 w-3 mr-1" />
+                ) : (
+                  <Globe className="h-3 w-3 mr-1" />
+                )}
+                {server.transportType.toUpperCase()}
+              </Badge>
+              {runtime.status !== "disconnected" && (
+                <span
+                  className={cn(
+                    "text-[10px] px-1.5 py-0.5 rounded-full",
+                    sc.color,
+                    "bg-muted/50",
+                  )}
+                >
+                  {sc.label}
+                </span>
               )}
-              {server.transportType.toUpperCase()}
-            </Badge>
-          </div>
-          <div className="flex items-center gap-2 mt-0.5">
-            <span className={`flex items-center gap-1 text-xs ${sc.color}`}>
-              <span
-                className={`inline-block w-1.5 h-1.5 rounded-full ${sc.dotColor} ${isConnecting ? "animate-pulse" : ""}`}
-              />
-              {sc.label}
-            </span>
-            {(toolCount > 0 || promptCount > 0 || resourceCount > 0) && (
-              <span className="text-xs text-muted-foreground">
-                {toolCount > 0 && `${toolCount} 工具`}
-                {promptCount > 0 && ` · ${promptCount} 提示词`}
-                {resourceCount > 0 && ` · ${resourceCount} 资源`}
-              </span>
-            )}
-            {runtime.error && (
-              <span className="text-xs text-destructive truncate">
-                {runtime.error}
-              </span>
-            )}
-          </div>
-          {server.description && (
-            <p className="text-xs text-muted-foreground mt-0.5 truncate">
-              {server.description}
-            </p>
-          )}
-        </div>
+            </div>
 
-        {/* 操作按钮 */}
-        <div className="flex items-center gap-1 shrink-0">
-          {isConnected ? (
-            <>
-              <Button
-                variant="ghost"
-                size="sm"
-                className="h-7 w-7 p-0"
-                onClick={() => refreshServer(server.id)}
-                title="刷新"
+            {server.description && (
+              <p className="text-xs text-muted-foreground line-clamp-1 mb-2">
+                {server.description}
+              </p>
+            )}
+
+            {/* 统计信息 */}
+            <div className="flex items-center gap-4 text-xs text-muted-foreground/80">
+              <div
+                className={cn(
+                  "flex items-center gap-1.5",
+                  toolCount > 0 && "text-foreground font-medium",
+                )}
               >
-                <RefreshCw className="h-3.5 w-3.5" />
-              </Button>
-              <Button
-                variant="ghost"
-                size="sm"
-                className="h-7 w-7 p-0"
-                onClick={() => disconnectServer(server.id)}
-                title="断开"
+                <Wrench className="h-3.5 w-3.5" />
+                <span>{toolCount}</span>
+              </div>
+              <div
+                className={cn(
+                  "flex items-center gap-1.5",
+                  promptCount > 0 && "text-foreground font-medium",
+                )}
               >
-                <PlugZap className="h-3.5 w-3.5 text-amber-500" />
-              </Button>
-            </>
-          ) : (
+                <MessageSquare className="h-3.5 w-3.5" />
+                <span>{promptCount}</span>
+              </div>
+              <div
+                className={cn(
+                  "flex items-center gap-1.5",
+                  resourceCount > 0 && "text-foreground font-medium",
+                )}
+              >
+                <FileText className="h-3.5 w-3.5" />
+                <span>{resourceCount}</span>
+              </div>
+
+              {!isConnected && hasCache && (
+                <span className="ml-auto text-[10px] bg-muted px-1.5 py-0.5 rounded text-muted-foreground">
+                  缓存预览
+                </span>
+              )}
+            </div>
+
+            {runtime.error && (
+              <div className="mt-2 flex items-start gap-1.5 text-xs text-destructive bg-destructive/5 p-2 rounded">
+                <AlertCircle className="h-3.5 w-3.5 shrink-0 mt-0.5" />
+                <span className="break-all">{runtime.error}</span>
+              </div>
+            )}
+          </div>
+
+          {/* 操作按钮组 */}
+          <div className="flex items-center gap-1 shrink-0 opacity-0 group-hover:opacity-100 transition-opacity focus-within:opacity-100">
             <Button
               variant="ghost"
-              size="sm"
-              className="h-7 w-7 p-0"
-              onClick={() => connectServer(server.id)}
+              size="icon"
+              className="h-8 w-8 text-muted-foreground hover:text-blue-600"
+              onClick={() =>
+                isConnected
+                  ? refreshServer(server.id)
+                  : connectServer(server.id)
+              }
               disabled={isConnecting}
-              title="连接"
+              title={isConnected ? "重新测试" : "测试连接"}
             >
               {isConnecting ? (
-                <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                <Loader2 className="h-4 w-4 animate-spin" />
+              ) : isConnected ? (
+                <RefreshCw className="h-4 w-4" />
               ) : (
-                <Plug className="h-3.5 w-3.5" />
+                <Plug className="h-4 w-4" />
               )}
             </Button>
-          )}
-          <Button
-            variant="ghost"
-            size="sm"
-            className="h-7 w-7 p-0"
-            onClick={() => onEdit(server)}
-            title="编辑"
-          >
-            <Pencil className="h-3.5 w-3.5" />
-          </Button>
-          <Button
-            variant="ghost"
-            size="sm"
-            className="h-7 w-7 p-0"
-            onClick={() => removeServer(server.id)}
-            title="删除"
-          >
-            <Trash2 className="h-3.5 w-3.5 text-destructive" />
-          </Button>
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-8 w-8 text-muted-foreground hover:text-foreground"
+              onClick={() => onEdit(server)}
+              title="编辑配置"
+            >
+              <Pencil className="h-4 w-4" />
+            </Button>
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-8 w-8 text-muted-foreground hover:text-destructive"
+              onClick={() => removeServer(server.id)}
+              title="删除"
+            >
+              <Trash2 className="h-4 w-4" />
+            </Button>
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-8 w-8 text-muted-foreground"
+              onClick={() => setExpanded(!expanded)}
+              disabled={!hasContent}
+              title={expanded ? "收起详情" : "查看详情"}
+            >
+              {expanded ? (
+                <ChevronDown className="h-4 w-4" />
+              ) : (
+                <ChevronRight className="h-4 w-4" />
+              )}
+            </Button>
+          </div>
         </div>
       </div>
 
       {/* 展开详情 */}
       {expanded && displayRuntime && (
-        <div className="px-4 pb-3 border-t pt-3">
-          <ServerDetail
-            tools={displayRuntime.tools}
-            prompts={displayRuntime.prompts}
-            resources={displayRuntime.resources}
-          />
+        <div className="px-4 pb-4 pt-0 border-t border-transparent animate-in slide-in-from-top-2 duration-200">
+          <div className="pt-4 border-t border-dashed">
+            <ServerDetail
+              tools={displayRuntime.tools}
+              prompts={displayRuntime.prompts}
+              resources={displayRuntime.resources}
+            />
+          </div>
         </div>
       )}
     </div>

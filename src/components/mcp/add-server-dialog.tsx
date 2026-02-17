@@ -69,7 +69,7 @@ export function AddServerDialog({
       } else {
         setFormData(getDefaultFormData());
         setJsonInput("");
-        setTab("json");
+        setTab("form");
       }
       setError(null);
       setConnecting(false);
@@ -81,7 +81,7 @@ export function AddServerDialog({
     setJsonInput("");
     setError(null);
     setConnecting(false);
-    setTab("json");
+    setTab("form");
   }, []);
 
   const handleOpenChange = useCallback(
@@ -203,7 +203,7 @@ export function AddServerDialog({
 
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
-      <DialogContent className="sm:max-w-2xl max-h-[85vh] overflow-y-auto">
+      <DialogContent className="sm:max-w-3xl max-h-[85vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>
             {isEdit
@@ -222,21 +222,7 @@ export function AddServerDialog({
         </DialogHeader>
 
         {/* Tab 切换 */}
-        <div className="flex border-b">
-          <button
-            onClick={() => {
-              // 切换到 JSON 时，将表单数据同步到 JSON
-              setJsonInput(formDataToJson(formData));
-              setTab("json");
-            }}
-            className={`flex-1 py-2 text-sm font-medium transition-colors border-b-2 ${
-              tab === "json"
-                ? "border-primary text-primary"
-                : "border-transparent text-muted-foreground hover:text-foreground"
-            }`}
-          >
-            从 JSON 导入
-          </button>
+        <div className="flex border-b mb-4">
           <button
             onClick={() => {
               // 切换到表单时，将 JSON 数据同步到表单
@@ -254,19 +240,35 @@ export function AddServerDialog({
           >
             表单填写
           </button>
+          <button
+            onClick={() => {
+              // 切换到 JSON 时，将表单数据同步到 JSON
+              setJsonInput(formDataToJson(formData));
+              setTab("json");
+            }}
+            className={`flex-1 py-2 text-sm font-medium transition-colors border-b-2 ${
+              tab === "json"
+                ? "border-primary text-primary"
+                : "border-transparent text-muted-foreground hover:text-foreground"
+            }`}
+          >
+            JSON 配置
+          </button>
         </div>
 
         {/* 内容区 */}
-        <div className="py-2">
+        <div className="py-2 min-h-[300px]">
           {tab === "json" ? (
-            <div className="space-y-3">
-              <Textarea
-                value={jsonInput}
-                onChange={(e) => setJsonInput(e.target.value)}
-                placeholder="粘贴 MCP Server JSON 配置..."
-                className="font-mono text-xs min-h-[180px]"
-              />
-              <div className="text-xs text-muted-foreground space-y-2">
+            <div className="space-y-4">
+              <div className="relative group">
+                <Textarea
+                  value={jsonInput}
+                  onChange={(e) => setJsonInput(e.target.value)}
+                  placeholder="粘贴 MCP Server JSON 配置..."
+                  className="font-mono text-xs h-[300px] max-h-[400px] overflow-y-auto whitespace-pre-wrap break-all resize-none bg-muted/30 focus:bg-background transition-colors"
+                />
+              </div>
+              <div className="text-xs text-muted-foreground space-y-3 pt-2">
                 <p className="font-medium">Stdio 示例：</p>
                 <pre className="bg-muted/50 rounded p-2 overflow-auto text-[11px]">
                   {EXAMPLE_JSON_STDIO}

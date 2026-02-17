@@ -35,34 +35,31 @@ export function RecommendedServersSection({
 
   return (
     <div className="space-y-4">
-      {/* 标题和分类筛选 */}
-      <div className="flex items-center justify-between">
-        <h3 className="text-sm font-medium">推荐 MCP Servers</h3>
-        <div className="flex items-center gap-2">
+      {/* 分类筛选 */}
+      <div className="flex items-center gap-2 overflow-x-auto pb-2 -mx-6 px-6 scrollbar-none">
+        <button
+          onClick={() => setSelectedCategory(null)}
+          className={`px-3 py-1.5 text-xs font-medium rounded-full transition-colors whitespace-nowrap ${
+            selectedCategory === null
+              ? "bg-primary text-primary-foreground"
+              : "bg-muted/50 text-muted-foreground hover:bg-muted hover:text-foreground"
+          }`}
+        >
+          全部
+        </button>
+        {categories.map((category) => (
           <button
-            onClick={() => setSelectedCategory(null)}
-            className={`px-2 py-1 text-xs rounded-md transition-colors ${
-              selectedCategory === null
+            key={category}
+            onClick={() => setSelectedCategory(category)}
+            className={`px-3 py-1.5 text-xs font-medium rounded-full transition-colors whitespace-nowrap ${
+              selectedCategory === category
                 ? "bg-primary text-primary-foreground"
-                : "bg-muted text-muted-foreground hover:bg-muted/80"
+                : "bg-muted/50 text-muted-foreground hover:bg-muted hover:text-foreground"
             }`}
           >
-            全部
+            {category}
           </button>
-          {categories.map((category) => (
-            <button
-              key={category}
-              onClick={() => setSelectedCategory(category)}
-              className={`px-2 py-1 text-xs rounded-md transition-colors ${
-                selectedCategory === category
-                  ? "bg-primary text-primary-foreground"
-                  : "bg-muted text-muted-foreground hover:bg-muted/80"
-              }`}
-            >
-              {category}
-            </button>
-          ))}
-        </div>
+        ))}
       </div>
 
       {/* 推荐列表 */}
