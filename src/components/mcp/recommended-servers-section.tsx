@@ -9,6 +9,7 @@ import {
   type RecommendedMCPServer,
 } from "@/constants/recommended-mcp-servers";
 import { useMCPStore } from "@/stores/mcp-store";
+import { Search } from "lucide-react";
 
 interface RecommendedServersSectionProps {
   onAddServer: (server: RecommendedMCPServer) => void;
@@ -18,15 +19,26 @@ export function RecommendedServersSection({
   onAddServer,
 }: RecommendedServersSectionProps) {
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
+  const [searchQuery, setSearchQuery] = useState("");
   const servers = useMCPStore((s) => s.servers);
 
   // 获取所有分类
   const categories = getMCPCategories();
 
   // 获取要显示的推荐 Servers
-  const displayServers = selectedCategory
+  let displayServers = selectedCategory
     ? getMCPServersByCategory(selectedCategory)
     : RECOMMENDED_MCP_SERVERS;
+
+  // 搜索过滤
+  if (searchQuery.trim()) {
+    const query = searchQuery.toLowerCase();
+    displayServers = displayServers.filter(
+      (server) =>
+        server.name.toLowerCase().includes(query) ||
+        server.description.toLowerCase().includes(query),
+    );
+  }
 
   // 检查某个推荐 Server 是否已添加
   const isServerAdded = (recommendedId: string) => {
@@ -35,6 +47,18 @@ export function RecommendedServersSection({
 
   return (
     <div className="space-y-4">
+      {/* 搜索框 */}
+      <div className="relative">
+        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+        <input
+          type="text"
+          placeholder="搜索推荐 Server..."
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+          className="w-full h-9 pl-9 pr-3 rounded-lg border bg-background text-sm focus:outline-none focus:ring-1 focus:ring-ring"
+        />
+      </div>
+
       {/* 分类筛选 */}
       <div className="flex items-center gap-2 overflow-x-auto pb-2 -mx-6 px-6 scrollbar-none">
         <button

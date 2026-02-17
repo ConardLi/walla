@@ -9,6 +9,8 @@ export interface MCPServerConfig {
   name: string;
   /** 描述 */
   description?: string;
+  /** 图标路径（相对于 public 目录）或 null（使用首字母） */
+  icon?: string | null;
   /** 连接类型 */
   transportType: MCPTransportType;
   /** Stdio 配置 */

@@ -106,6 +106,19 @@ export function AddServerDialog({
           setConnecting(false);
           return;
         }
+
+        // 检查 JSON 是否有未替换的变量
+        const placeholderRegex = /\$\{[^}]+\}/g;
+        const jsonStr = jsonInput;
+        const unreplacedVars = jsonStr.match(placeholderRegex);
+        if (unreplacedVars) {
+          setError(
+            `请替换未填写的变量：${[...new Set(unreplacedVars)].join(", ")}`,
+          );
+          setConnecting(false);
+          return;
+        }
+
         const s = result.servers[0];
         config = {
           id:
@@ -139,6 +152,35 @@ export function AddServerDialog({
           return;
         }
 
+        // 检查推荐 Server 是否有未替换的变量
+        if (recommendedServer) {
+          const unreplacedVars: string[] = [];
+          const placeholderRegex = /\$\{[^}]+\}/g;
+
+          if (formData.command.trim()) {
+            const matches = formData.command.trim().match(placeholderRegex);
+            if (matches) unreplacedVars.push(...matches);
+          }
+          if (formData.url.trim()) {
+            const matches = formData.url.trim().match(placeholderRegex);
+            if (matches) unreplacedVars.push(...matches);
+          }
+          for (const pair of formData.env) {
+            if (pair.value) {
+              const matches = pair.value.match(placeholderRegex);
+              if (matches) unreplacedVars.push(...matches);
+            }
+          }
+
+          if (unreplacedVars.length > 0) {
+            setError(
+              `请替换未填写的变量：${[...new Set(unreplacedVars)].join(", ")}`,
+            );
+            setConnecting(false);
+            return;
+          }
+        }
+
         const env: Record<string, string> = {};
         for (const pair of formData.env) {
           if (pair.key.trim()) {
@@ -154,6 +196,7 @@ export function AddServerDialog({
               : `mcp-${Date.now()}`),
           name: formData.name.trim(),
           description: formData.description.trim() || undefined,
+          icon: editServer?.icon ?? recommendedServer?.icon ?? undefined,
           transportType: formData.transportType,
           command:
             formData.transportType === "stdio"

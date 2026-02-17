@@ -45,6 +45,25 @@ const statusConfig: Record<MCPServerStatus, { label: string; color: string }> =
     },
   };
 
+function getServerIcon(icon?: string | null, name?: string) {
+  if (icon) {
+    return (
+      <img
+        src={icon}
+        alt={name}
+        className="h-10 w-10 rounded-lg object-contain bg-muted/50 p-1"
+      />
+    );
+  }
+
+  const firstLetter = name?.charAt(0).toUpperCase() ?? "S";
+  return (
+    <div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center text-primary">
+      <span className="text-lg font-semibold">{firstLetter}</span>
+    </div>
+  );
+}
+
 interface ServerCardProps {
   server: MCPServerConfig;
   onEdit: (server: MCPServerConfig) => void;
@@ -85,7 +104,7 @@ export function ServerCard({ server, onEdit }: ServerCardProps) {
             {isConnecting ? (
               <Loader2 className="h-5 w-5 animate-spin" />
             ) : (
-              <Server className="h-5 w-5" />
+              getServerIcon(server.icon, server.name)
             )}
           </div>
 
@@ -152,12 +171,6 @@ export function ServerCard({ server, onEdit }: ServerCardProps) {
                 <FileText className="h-3.5 w-3.5" />
                 <span>{resourceCount}</span>
               </div>
-
-              {!isConnected && hasCache && (
-                <span className="ml-auto text-[10px] bg-muted px-1.5 py-0.5 rounded text-muted-foreground">
-                  缓存预览
-                </span>
-              )}
             </div>
 
             {runtime.error && (
