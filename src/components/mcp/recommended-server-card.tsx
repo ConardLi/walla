@@ -42,7 +42,7 @@ export function RecommendedServerCard({
   return (
     <div
       className={cn(
-        "group border rounded-xl bg-card p-3 transition-all duration-200 hover:shadow-sm flex items-center gap-3",
+        "group border rounded-xl bg-chat-background p-3 transition-all duration-200 hover:shadow-sm flex items-center gap-3",
         isAdded && "bg-muted/30 opacity-80",
       )}
     >

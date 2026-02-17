@@ -42,7 +42,9 @@ export function RecommendedServersSection({
 
   // 检查某个推荐 Server 是否已添加
   const isServerAdded = (recommendedId: string) => {
-    return servers.some((s) => s.id.includes(recommendedId));
+    return servers.some(
+      (s) => s.id === recommendedId || s.id.startsWith(`${recommendedId}-`),
+    );
   };
 
   return (

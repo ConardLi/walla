@@ -93,7 +93,7 @@ export function ServerCard({ server, onEdit }: ServerCardProps) {
   return (
     <div
       className={cn(
-        "group border rounded-xl bg-card transition-all duration-200 hover:shadow-sm",
+        "group border rounded-xl bg-chat-background transition-all duration-200 hover:shadow-sm",
         expanded && "ring-1 ring-primary/20 shadow-sm",
       )}
     >
