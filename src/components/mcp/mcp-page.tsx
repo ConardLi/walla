@@ -48,7 +48,7 @@ export function MCPPage() {
   return (
     <div className="flex-1 flex flex-col h-full overflow-hidden bg-chat-background">
       <Tabs
-        defaultValue="installed"
+        defaultValue="recommended"
         className="flex-1 flex flex-col h-full overflow-hidden"
       >
         {/* 头部 */}
@@ -62,6 +62,9 @@ export function MCPPage() {
             </div>
 
             <TabsList className="bg-background/60 border">
+              <TabsTrigger value="recommended" className="text-xs px-3">
+                推荐
+              </TabsTrigger>
               <TabsTrigger value="installed" className="text-xs px-3">
                 已添加
                 {servers.length > 0 && (
@@ -69,9 +72,6 @@ export function MCPPage() {
                     {servers.length}
                   </span>
                 )}
-              </TabsTrigger>
-              <TabsTrigger value="recommended" className="text-xs px-3">
-                推荐市场
               </TabsTrigger>
             </TabsList>
           </div>
