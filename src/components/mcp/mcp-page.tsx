@@ -2,10 +2,11 @@
 
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Blocks, Plus, PackageOpen } from "lucide-react";
+import { Blocks, Plus, PackageOpen, ExternalLink } from "lucide-react";
 import { useMCPStore } from "@/stores/mcp-store";
 import type { MCPServerConfig } from "@/types/mcp";
 import type { RecommendedMCPServer } from "@/constants/recommended-mcp-servers";
+import { MCP_MARKETS } from "@/constants/mcp-markets";
 import { ServerCard } from "./server-card";
 import { AddServerDialog } from "./add-server-dialog";
 import { RecommendedServersSection } from "./recommended-servers-section";
@@ -63,15 +64,18 @@ export function MCPPage() {
 
             <TabsList className="bg-background/60 border">
               <TabsTrigger value="recommended" className="text-xs px-3">
-                推荐
+                推荐 MCP
               </TabsTrigger>
               <TabsTrigger value="installed" className="text-xs px-3">
-                已添加
+                已添加的 MCP
                 {servers.length > 0 && (
                   <span className="ml-1.5 bg-muted-foreground/10 px-1.5 py-0.5 rounded-full text-[10px] text-muted-foreground">
                     {servers.length}
                   </span>
                 )}
+              </TabsTrigger>
+              <TabsTrigger value="marketplace" className="text-xs px-3">
+                搜索 MCP
               </TabsTrigger>
             </TabsList>
           </div>
@@ -128,6 +132,53 @@ export function MCPPage() {
           >
             <div className="px-6 py-6 max-w-5xl mx-auto">
               <RecommendedServersSection onAddServer={handleAddRecommended} />
+            </div>
+          </TabsContent>
+
+          {/* MCP 市场 */}
+          <TabsContent
+            value="marketplace"
+            className="h-full overflow-y-auto outline-none data-[state=inactive]:hidden"
+          >
+            <div className="px-6 py-6 max-w-5xl mx-auto">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {MCP_MARKETS.map((market) => (
+                  <a
+                    key={market.url}
+                    href={market.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center gap-4 p-4 rounded-lg border bg-card hover:bg-accent/50 transition-colors cursor-pointer"
+                  >
+                    <div className="flex-shrink-0 w-12 h-12 rounded-lg bg-muted flex items-center justify-center overflow-hidden">
+                      <img
+                        src={market.logo}
+                        alt={market.name}
+                        className="w-8 h-8 object-contain rounded"
+                        onError={(e) => {
+                          const target = e.target as HTMLImageElement;
+                          target.style.display = "none";
+                          const parent = target.parentElement;
+                          if (parent) {
+                            parent.innerHTML = `<span class="text-lg font-semibold text-muted-foreground">${market.name.charAt(0).toUpperCase()}</span>`;
+                          }
+                        }}
+                      />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2">
+                        <h3 className="font-medium text-foreground truncate">
+                          {market.name}
+                        </h3>
+                        <ExternalLink className="w-3.5 h-3.5 text-muted-foreground flex-shrink-0" />
+                      </div>
+                      <p className="text-sm text-muted-foreground truncate">
+                        {market.description}
+                      </p>
+                    </div>
+                  </a>
+                ))}
+              </div>
             </div>
           </TabsContent>
         </div>
