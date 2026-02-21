@@ -1,14 +1,23 @@
 import type { SessionMeta } from "@/types/session";
+import type { TaskListSortMode } from "@/types/nav";
 
 export function groupByTime(
   metas: SessionMeta[],
+  sortMode: TaskListSortMode = "updated",
 ): Record<string, SessionMeta[]> {
   const groups: Record<string, SessionMeta[]> = {};
-  const sorted = [...metas].sort((a, b) => b.lastActiveAt - a.lastActiveAt);
+  const sorted = [...metas].sort((a, b) => {
+    if (sortMode === "created") {
+      return b.createdAt - a.createdAt;
+    } else {
+      return b.lastActiveAt - a.lastActiveAt;
+    }
+  });
   const now = new Date();
 
   for (const m of sorted) {
-    const d = new Date(m.lastActiveAt);
+    const timestamp = sortMode === "created" ? m.createdAt : m.lastActiveAt;
+    const d = new Date(timestamp);
     const isToday =
       d.getFullYear() === now.getFullYear() &&
       d.getMonth() === now.getMonth() &&
@@ -37,6 +46,7 @@ export function groupByTime(
 
 export function groupByWorkspace(
   metas: SessionMeta[],
+  sortMode: TaskListSortMode = "updated",
 ): Record<string, SessionMeta[]> {
   const groups: Record<string, SessionMeta[]> = {};
   for (const m of metas) {
@@ -45,13 +55,20 @@ export function groupByWorkspace(
     groups[dir].push(m);
   }
   for (const key in groups) {
-    groups[key].sort((a, b) => b.lastActiveAt - a.lastActiveAt);
+    groups[key].sort((a, b) => {
+      if (sortMode === "created") {
+        return b.createdAt - a.createdAt;
+      } else {
+        return b.lastActiveAt - a.lastActiveAt;
+      }
+    });
   }
   return groups;
 }
 
 export function groupByAgent(
   metas: SessionMeta[],
+  sortMode: TaskListSortMode = "updated",
 ): Record<string, SessionMeta[]> {
   const groups: Record<string, SessionMeta[]> = {};
   for (const m of metas) {
@@ -60,7 +77,13 @@ export function groupByAgent(
     groups[key].push(m);
   }
   for (const key in groups) {
-    groups[key].sort((a, b) => b.lastActiveAt - a.lastActiveAt);
+    groups[key].sort((a, b) => {
+      if (sortMode === "created") {
+        return b.createdAt - a.createdAt;
+      } else {
+        return b.lastActiveAt - a.lastActiveAt;
+      }
+    });
   }
   return groups;
 }

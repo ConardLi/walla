@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import { cn } from "@/lib/utils";
 import { useSessionStore } from "@/stores/session-store";
 import { useAgentStore, selectAnyReady } from "@/stores/agent-store";
 import { useWorkspaceStore } from "@/stores/workspace-store";
@@ -12,10 +11,13 @@ import {
   Bot,
   Clock,
   Loader2,
-  Star,
   Search,
   List,
   AlignLeft,
+  Settings2,
+  Check,
+  PlusCircle,
+  RefreshCcw,
 } from "lucide-react";
 import {
   Tooltip,
@@ -24,6 +26,11 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { Separator } from "@/components/ui/separator";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 import { TaskItem } from "./task-item";
 import { SessionSearch } from "./session-search";
 import { groupByTime, groupByWorkspace, groupByAgent } from "./task-list-utils";
@@ -31,9 +38,12 @@ import { groupByTime, groupByWorkspace, groupByAgent } from "./task-list-utils";
 export function TaskList() {
   const groupMode = useNavStore((s) => s.taskListGroupMode);
   const setGroupMode = useNavStore((s) => s.setTaskListGroupMode);
+  const sortMode = useNavStore((s) => s.taskListSortMode);
+  const setSortMode = useNavStore((s) => s.setTaskListSortMode);
   const viewMode = useNavStore((s) => s.taskListViewMode);
   const setViewMode = useNavStore((s) => s.setTaskListViewMode);
   const [searchOpen, setSearchOpen] = useState(false);
+  const [menuOpen, setMenuOpen] = useState(false);
   const sessionMetas = useSessionStore((s) => s.sessionMetas);
   const activeSessionId = useSessionStore((s) => s.activeSessionId);
   const switchToSession = useSessionStore((s) => s.switchToSession);
@@ -59,12 +69,21 @@ export function TaskList() {
   const favoritedMetas = sessionMetas.filter((m) => m.favorited);
   const normalMetas = sessionMetas.filter((m) => !m.favorited);
 
+  // 根据 sortMode 对收藏列表排序
+  const sortedFavoritedMetas = [...favoritedMetas].sort((a, b) => {
+    if (sortMode === "created") {
+      return b.createdAt - a.createdAt;
+    } else {
+      return b.lastActiveAt - a.lastActiveAt;
+    }
+  });
+
   const groups =
     groupMode === "time"
-      ? groupByTime(normalMetas)
+      ? groupByTime(normalMetas, sortMode)
       : groupMode === "workspace"
-        ? groupByWorkspace(normalMetas)
-        : groupByAgent(normalMetas);
+        ? groupByWorkspace(normalMetas, sortMode)
+        : groupByAgent(normalMetas, sortMode);
 
   const groupKeys = Object.keys(groups);
 
@@ -72,67 +91,151 @@ export function TaskList() {
     <div className="flex flex-col flex-1 overflow-hidden">
       {/* 分组模式切换 + 新建按钮 */}
       <div className="flex items-center gap-1 px-3 py-2 border-b">
-        <div className="flex-1 flex items-center gap-1">
-          <TooltipProvider>
-            {(
-              [
-                { mode: "time" as const, icon: Clock, label: "按时间组织" },
-                { mode: "agent" as const, icon: Bot, label: "按 Agent 组织" },
-                {
-                  mode: "workspace" as const,
-                  icon: FolderOpen,
-                  label: "按工作目录组织",
-                },
-              ] as const
-            ).map(({ mode, icon: Icon, label }) => (
-              <Tooltip key={mode}>
-                <TooltipTrigger asChild>
+        <div className="flex-1" />
+        <TooltipProvider>
+          <Popover open={menuOpen} onOpenChange={setMenuOpen}>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <PopoverTrigger asChild>
                   <button
                     type="button"
-                    onClick={() => setGroupMode(mode)}
-                    className={cn(
-                      "p-1 rounded transition-colors",
-                      groupMode === mode
-                        ? "text-foreground bg-accent"
-                        : "text-muted-foreground hover:text-foreground",
-                    )}
+                    className="p-1 rounded text-muted-foreground hover:text-foreground transition-colors"
                   >
-                    <Icon className="h-3.5 w-3.5" />
+                    <Settings2 className="h-4 w-4" />
                   </button>
-                </TooltipTrigger>
-                <TooltipContent side="bottom" className="text-xs">
-                  {label}
-                </TooltipContent>
-              </Tooltip>
-            ))}
-          </TooltipProvider>
-        </div>
-        <TooltipProvider>
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <button
-                type="button"
-                onClick={() =>
-                  setViewMode(viewMode === "normal" ? "compact" : "normal")
-                }
-                className={cn(
-                  "p-1 rounded transition-colors",
-                  viewMode === "normal"
-                    ? "text-foreground bg-accent"
-                    : "text-muted-foreground hover:text-foreground",
-                )}
-              >
-                {viewMode === "normal" ? (
-                  <AlignLeft className="h-4 w-4" />
-                ) : (
-                  <List className="h-4 w-4" />
-                )}
-              </button>
-            </TooltipTrigger>
-            <TooltipContent side="bottom" className="text-xs">
-              {viewMode === "normal" ? "简化模式" : "详细模式"}
-            </TooltipContent>
-          </Tooltip>
+                </PopoverTrigger>
+              </TooltipTrigger>
+              <TooltipContent side="bottom" className="text-xs">
+                组织、排序、展示
+              </TooltipContent>
+            </Tooltip>
+            <PopoverContent
+              className="w-56 p-2 bg-popover/80 backdrop-blur-sm"
+              align="end"
+            >
+              <div className="space-y-1">
+                <div className="px-2 py-1.5 text-xs text-muted-foreground">
+                  组织方式
+                </div>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setGroupMode("time");
+                    setMenuOpen(false);
+                  }}
+                  className="w-full flex items-center justify-between px-2 py-1.5 text-xs rounded-md hover:bg-accent transition-colors"
+                >
+                  <span className="flex items-center gap-2">
+                    <Clock className="h-3.5 w-3.5" />
+                    按时间组织
+                  </span>
+                  {groupMode === "time" && <Check className="h-3.5 w-3.5" />}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setGroupMode("agent");
+                    setMenuOpen(false);
+                  }}
+                  className="w-full flex items-center justify-between px-2 py-1.5 text-xs rounded-md hover:bg-accent transition-colors"
+                >
+                  <span className="flex items-center gap-2">
+                    <Bot className="h-3.5 w-3.5" />按 Agent 组织
+                  </span>
+                  {groupMode === "agent" && <Check className="h-3.5 w-3.5" />}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setGroupMode("workspace");
+                    setMenuOpen(false);
+                  }}
+                  className="w-full flex items-center justify-between px-2 py-1.5 text-xs rounded-md hover:bg-accent transition-colors"
+                >
+                  <span className="flex items-center gap-2">
+                    <FolderOpen className="h-3.5 w-3.5" />
+                    按工作目录组织
+                  </span>
+                  {groupMode === "workspace" && (
+                    <Check className="h-3.5 w-3.5" />
+                  )}
+                </button>
+              </div>
+
+              <Separator className="my-2" />
+
+              <div className="space-y-1">
+                <div className="px-2 py-1.5 text-xs text-muted-foreground">
+                  排序方式
+                </div>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setSortMode("created");
+                    setMenuOpen(false);
+                  }}
+                  className="w-full flex items-center justify-between px-2 py-1.5 text-xs rounded-md hover:bg-accent transition-colors"
+                >
+                  <span className="flex items-center gap-2">
+                    <PlusCircle className="h-3.5 w-3.5" />
+                    按创建时间
+                  </span>
+                  {sortMode === "created" && <Check className="h-3.5 w-3.5" />}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setSortMode("updated");
+                    setMenuOpen(false);
+                  }}
+                  className="w-full flex items-center justify-between px-2 py-1.5 text-xs rounded-md hover:bg-accent transition-colors"
+                >
+                  <span className="flex items-center gap-2">
+                    <RefreshCcw className="h-3.5 w-3.5" />
+                    按更新时间
+                  </span>
+                  {sortMode === "updated" && <Check className="h-3.5 w-3.5" />}
+                </button>
+              </div>
+
+              <Separator className="my-2" />
+
+              <div className="space-y-1">
+                <div className="px-2 py-1.5 text-xs text-muted-foreground">
+                  显示模式
+                </div>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setViewMode("normal");
+                    setMenuOpen(false);
+                  }}
+                  className="w-full flex items-center justify-between px-2 py-1.5 text-xs rounded-md hover:bg-accent transition-colors"
+                >
+                  <span className="flex items-center gap-2">
+                    <AlignLeft className="h-3.5 w-3.5" />
+                    详细模式
+                  </span>
+                  {viewMode === "normal" && <Check className="h-3.5 w-3.5" />}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setViewMode("compact");
+                    setMenuOpen(false);
+                  }}
+                  className="w-full flex items-center justify-between px-2 py-1.5 text-xs rounded-md hover:bg-accent transition-colors"
+                >
+                  <span className="flex items-center gap-2">
+                    <List className="h-3.5 w-3.5" />
+                    简化模式
+                  </span>
+                  {viewMode === "compact" && <Check className="h-3.5 w-3.5" />}
+                </button>
+              </div>
+            </PopoverContent>
+          </Popover>
+
           <Tooltip>
             <TooltipTrigger asChild>
               <button
@@ -144,9 +247,10 @@ export function TaskList() {
               </button>
             </TooltipTrigger>
             <TooltipContent side="bottom" className="text-xs">
-              搜索会话
+              搜索任务
             </TooltipContent>
           </Tooltip>
+
           <Tooltip>
             <TooltipTrigger asChild>
               <button
@@ -179,7 +283,7 @@ export function TaskList() {
           ) : (
             <>
               {/* 收藏分组 */}
-              {favoritedMetas.length > 0 && (
+              {sortedFavoritedMetas.length > 0 && (
                 <div>
                   <div className="px-2 py-4 flex items-center gap-2">
                     <div className="flex items-center gap-1 text-xs text-muted-foreground/90 shrink-0">
@@ -187,7 +291,7 @@ export function TaskList() {
                     </div>
                   </div>
                   <div className="space-y-0.5">
-                    {favoritedMetas.map((meta) => (
+                    {sortedFavoritedMetas.map((meta) => (
                       <TaskItem
                         key={meta.sessionId}
                         meta={meta}

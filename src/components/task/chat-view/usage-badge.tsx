@@ -69,8 +69,10 @@ export const UsageBadge = memo(function UsageBadge({
 
   return (
     <div className="flex items-center justify-center gap-1 mt-2">
-      {hasLatest && <TokenLine label="本次：" usage={latestUsage} />}
-      {hasCumulative && <TokenLine label="累计：" total usage={cumulative} />}
+      {hasLatest ? <TokenLine label="本次：" usage={latestUsage} /> : null}
+      {hasCumulative ? (
+        <TokenLine label="累计：" total usage={cumulative} />
+      ) : null}
     </div>
   );
 });

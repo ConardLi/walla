@@ -85,9 +85,7 @@ export function SessionSearch({
   const results = useMemo(() => {
     if (!query.trim()) {
       // 无搜索词时按最近活跃排序展示全部
-      return [...sessionMetas].sort(
-        (a, b) => b.lastActiveAt - a.lastActiveAt,
-      );
+      return [...sessionMetas].sort((a, b) => b.lastActiveAt - a.lastActiveAt);
     }
     return sessionMetas
       .filter((m) => matchSession(m, query.trim(), dimension))
@@ -163,7 +161,7 @@ export function SessionSearch({
               setSelectedIndex(0);
             }}
             onKeyDown={handleKeyDown}
-            placeholder="搜索会话…"
+            placeholder="搜索任务…"
             className="flex-1 bg-transparent text-sm outline-none placeholder:text-muted-foreground/60"
           />
           {query && (
@@ -229,11 +227,6 @@ export function SessionSearch({
                     "border-l-2 border-primary",
                 )}
               >
-                {/* 收藏标记 */}
-                {meta.favorited && (
-                  <Star className="h-3 w-3 text-amber-400 fill-amber-400 shrink-0" />
-                )}
-
                 {/* 内容 */}
                 <div className="flex-1 min-w-0">
                   <div className="truncate text-sm font-medium">

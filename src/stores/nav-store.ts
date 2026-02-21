@@ -4,7 +4,7 @@
 
 import { create } from "zustand";
 import * as ipc from "@/services/ipc-client";
-import type { NavPage, TaskListGroupMode } from "@/types/nav";
+import type { NavPage, TaskListGroupMode, TaskListSortMode } from "@/types/nav";
 
 export type TaskListViewMode = "normal" | "compact";
 
@@ -12,6 +12,7 @@ interface NavState {
   activePage: NavPage;
   taskListCollapsed: boolean;
   taskListGroupMode: TaskListGroupMode;
+  taskListSortMode: TaskListSortMode;
   taskListViewMode: TaskListViewMode;
   navLoaded: boolean;
   loadNavSettings: () => Promise<void>;
@@ -19,6 +20,7 @@ interface NavState {
   toggleTaskList: () => void;
   setTaskListCollapsed: (collapsed: boolean) => void;
   setTaskListGroupMode: (mode: TaskListGroupMode) => void;
+  setTaskListSortMode: (mode: TaskListSortMode) => void;
   setTaskListViewMode: (mode: TaskListViewMode) => void;
 }
 
@@ -46,10 +48,19 @@ async function persistTaskListViewMode(mode: TaskListViewMode) {
   });
 }
 
+async function persistTaskListSortMode(mode: TaskListSortMode) {
+  await ipc.storageSet({
+    namespace: "settings",
+    key: "taskListSortMode",
+    value: mode,
+  });
+}
+
 export const useNavStore = create<NavState>((set, get) => ({
   activePage: "task",
   taskListCollapsed: true,
   taskListGroupMode: "time",
+  taskListSortMode: "updated",
   taskListViewMode: "compact",
   navLoaded: false,
 
@@ -70,6 +81,13 @@ export const useNavStore = create<NavState>((set, get) => ({
       });
       const groupMode = (groupModeRes.value as TaskListGroupMode) || "time";
 
+      // 加载 taskListSortMode
+      const sortModeRes = await ipc.storageGet({
+        namespace: "settings",
+        key: "taskListSortMode",
+      });
+      const sortMode = (sortModeRes.value as TaskListSortMode) || "updated";
+
       // 加载 taskListViewMode（默认 compact）
       const viewModeRes = await ipc.storageGet({
         namespace: "settings",
@@ -80,6 +98,7 @@ export const useNavStore = create<NavState>((set, get) => ({
       set({
         taskListCollapsed: collapsed,
         taskListGroupMode: groupMode,
+        taskListSortMode: sortMode,
         taskListViewMode: viewMode,
         navLoaded: true,
       });
@@ -109,5 +128,10 @@ export const useNavStore = create<NavState>((set, get) => ({
   setTaskListViewMode: (mode) => {
     set({ taskListViewMode: mode });
     persistTaskListViewMode(mode);
+  },
+
+  setTaskListSortMode: (mode) => {
+    set({ taskListSortMode: mode });
+    persistTaskListSortMode(mode);
   },
 }));

@@ -10,6 +10,7 @@ export type NavPage =
   | "playground";
 
 export type TaskListGroupMode = "time" | "agent" | "workspace";
+export type TaskListSortMode = "created" | "updated";
 
 export type PlaygroundPanel =
   | "agent"
