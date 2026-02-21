@@ -6,6 +6,7 @@ import type { NavPage } from "@/types/nav";
 import {
   MessageSquare,
   Bot,
+  Boxes,
   Blocks,
   Puzzle,
   BookOpen,
@@ -17,6 +18,7 @@ import {
 const topItems: Array<{ id: NavPage; label: string; icon: React.ReactNode }> = [
   { id: "task", label: "任务", icon: <MessageSquare className="h-5 w-5" /> },
   { id: "agent", label: "Agent", icon: <Bot className="h-5 w-5" /> },
+  { id: "model", label: "模型", icon: <Boxes className="h-5 w-5" /> },
   { id: "mcp", label: "MCP", icon: <Blocks className="h-5 w-5" /> },
   { id: "extension", label: "扩展", icon: <Puzzle className="h-5 w-5" /> },
   { id: "knowledge", label: "知识库", icon: <BookOpen className="h-5 w-5" /> },

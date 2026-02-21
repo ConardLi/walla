@@ -16,6 +16,7 @@ import { useSettingsStore } from "@/stores/settings-store";
 import { useSessionStore } from "@/stores/session-store";
 import { useWorkspaceStore } from "@/stores/workspace-store";
 import { useNavStore } from "@/stores/nav-store";
+import { useModelStore } from "@/stores/model-store";
 import { toast } from "sonner";
 
 export function AppShell() {
@@ -34,6 +35,7 @@ export function AppShell() {
   const loadDirectories = useWorkspaceStore((s) => s.loadDirectories);
   const setActivePage = useNavStore((s) => s.setActivePage);
   const loadNavSettings = useNavStore((s) => s.loadNavSettings);
+  const loadProviders = useModelStore((s) => s.loadProviders);
 
   // 初始化：加载所有配置
   useEffect(() => {
@@ -43,6 +45,7 @@ export function AppShell() {
     loadConnections();
     loadSessionMetas();
     loadDirectories();
+    loadProviders();
   }, []);
 
   // 配置加载完成后执行启动流程

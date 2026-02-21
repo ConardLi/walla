@@ -3,6 +3,7 @@
 import { useNavStore } from "@/stores/nav-store";
 import { TaskPage } from "@/components/task/task-page";
 import { AgentPage } from "@/components/agent/agent-page";
+import { ModelPage } from "@/components/model/model-page";
 import { MCPPage } from "@/components/mcp/mcp-page";
 import { ExtensionPage } from "@/components/extension/extension-page";
 import { KnowledgePage } from "@/components/knowledge/knowledge-page";
@@ -18,6 +19,8 @@ export function PageRouter() {
       return <TaskPage />;
     case "agent":
       return <AgentPage />;
+    case "model":
+      return <ModelPage />;
     case "mcp":
       return <MCPPage />;
     case "extension":

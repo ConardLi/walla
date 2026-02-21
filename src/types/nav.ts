@@ -1,6 +1,7 @@
 export type NavPage =
   | "task"
   | "agent"
+  | "model"
   | "mcp"
   | "extension"
   | "knowledge"
