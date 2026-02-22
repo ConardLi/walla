@@ -1,38 +1,20 @@
 "use client";
 
 import { useState } from "react";
-import { cn } from "@/lib/utils";
 import type { ModelProvider } from "@/types/model";
 import { useModelStore } from "@/stores/model-store";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
 import { Input } from "@/components/ui/input";
-import {
-  Globe,
-  Key,
-  Save,
-  Eye,
-  EyeOff,
-  Trash2,
-  Pencil,
-  Plus,
-} from "lucide-react";
+import { Globe, Key, Save, Eye, EyeOff, Trash2, Pencil } from "lucide-react";
 import { ModelList } from "./model-list";
 import { AddProviderDialog } from "./add-provider-dialog";
+import { PROVIDER_TYPE_LABELS } from "@/constants/model-providers";
 
 interface ProviderSettingsProps {
   provider: ModelProvider;
 }
-
-const providerTypeLabels: Record<string, string> = {
-  openai: "OpenAI",
-  anthropic: "Anthropic",
-  gemini: "Gemini",
-  "azure-openai": "Azure OpenAI",
-  ollama: "Ollama",
-  "openai-compatible": "OpenAI 兼容",
-};
 
 function ProviderIcon({ provider }: { provider: ModelProvider }) {
   if (provider.icon) {
@@ -105,7 +87,7 @@ export function ProviderSettings({ provider }: ProviderSettingsProps) {
                   variant="secondary"
                   className="font-normal text-xs px-2 h-5 bg-muted"
                 >
-                  {providerTypeLabels[provider.type] ?? provider.type}
+                  {PROVIDER_TYPE_LABELS[provider.type] ?? provider.type}
                 </Badge>
                 {!provider.enabled && (
                   <Badge

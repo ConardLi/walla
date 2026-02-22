@@ -6,11 +6,11 @@ import type { ModelProvider, ProviderType } from "@/types/model";
 import {
   BUILTIN_PROVIDER_TEMPLATES,
   createProviderFromTemplate,
+  PROVIDER_TYPE_OPTIONS,
 } from "@/constants/model-providers";
 import {
   Dialog,
   DialogContent,
-  DialogHeader,
   DialogTitle,
   DialogDescription,
   DialogFooter,
@@ -32,15 +32,6 @@ interface AddProviderDialogProps {
   onOpenChange: (open: boolean) => void;
   editProvider?: ModelProvider | null;
 }
-
-const PROVIDER_TYPES: { value: ProviderType; label: string }[] = [
-  { value: "openai", label: "OpenAI" },
-  { value: "anthropic", label: "Anthropic" },
-  { value: "gemini", label: "Google Gemini" },
-  { value: "azure-openai", label: "Azure OpenAI" },
-  { value: "ollama", label: "Ollama" },
-  { value: "openai-compatible", label: "OpenAI 兼容协议" },
-];
 
 export function AddProviderDialog({
   open,
@@ -203,7 +194,7 @@ export function AddProviderDialog({
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  {PROVIDER_TYPES.map((pt) => (
+                  {PROVIDER_TYPE_OPTIONS.map((pt) => (
                     <SelectItem key={pt.value} value={pt.value}>
                       {pt.label}
                     </SelectItem>

@@ -1,0 +1,32 @@
+{
+  "name": "ai-sdk-tests",
+  "version": "1.0.0",
+  "description": "AI SDK 多提供商测试脚本",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test:openai": "tsx providers/test-openai.ts",
+    "test:anthropic": "tsx providers/test-anthropic.ts",
+    "test:gemini": "tsx providers/test-gemini.ts",
+    "test:ollama": "tsx providers/test-ollama.ts",
+    "test:compatible": "tsx providers/test-openai-compatible.ts",
+    "test:responses": "tsx providers/test-openai-responses.ts",
+    "test:all": "npm run test:openai && npm run test:anthropic && npm run test:gemini"
+  },
+  "dependencies": {
+    "@ai-sdk/anthropic": "^3.0.46",
+    "@ai-sdk/azure": "^3.0.31",
+    "@ai-sdk/google": "^3.0.30",
+    "@ai-sdk/openai": "^3.0.30",
+    "@ai-sdk/openai-compatible": "^2.0.30",
+    "ai": "^6.0.97",
+    "dotenv": "^17.3.1",
+    "ollama-ai-provider-v2": "^3.3.1",
+    "zod": "^4.3.6"
+  },
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "tsx": "^4.19.2",
+    "typescript": "^5.7.2"
+  }
+}

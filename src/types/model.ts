@@ -7,7 +7,8 @@ export type ProviderType =
   | "gemini"
   | "azure-openai"
   | "ollama"
-  | "openai-compatible";
+  | "openai-compatible"
+  | "open-responses";
 
 /**
  * 模型能力标签

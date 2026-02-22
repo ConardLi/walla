@@ -9,3 +9,5 @@ opencode.json
 .DS_Store
 doc/
 .windsurf/
+test/ai-sdk/.env
+test/ai-sdk/node_modules/

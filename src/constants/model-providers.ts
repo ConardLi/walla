@@ -1,5 +1,17 @@
 import type { ModelProvider, ProviderType } from "@/types/model";
 
+export const PROVIDER_TYPE_OPTIONS: { value: ProviderType; label: string }[] = [
+  { value: "openai-compatible", label: "OpenAI" },
+  { value: "open-responses", label: "OpenAI Responses" },
+  { value: "anthropic", label: "Anthropic" },
+  { value: "gemini", label: "Google Gemini" },
+  { value: "ollama", label: "Ollama" },
+];
+
+export const PROVIDER_TYPE_LABELS: Record<string, string> = Object.fromEntries(
+  PROVIDER_TYPE_OPTIONS.map((opt) => [opt.value, opt.label]),
+);
+
 export interface BuiltinProviderTemplate {
   id: string;
   name: string;
@@ -17,7 +29,7 @@ export const BUILTIN_PROVIDER_TEMPLATES: BuiltinProviderTemplate[] = [
   {
     id: "openai",
     name: "OpenAI",
-    type: "openai",
+    type: "openai-compatible",
     apiHost: "https://api.openai.com/v1",
     icon: "/providers/openai.svg",
     models: [
@@ -392,13 +404,6 @@ export const BUILTIN_PROVIDER_TEMPLATES: BuiltinProviderTemplate[] = [
     type: "ollama",
     apiHost: "http://localhost:11434",
     icon: "/providers/ollama.png",
-    models: [],
-  },
-  {
-    id: "azure-openai",
-    name: "Azure OpenAI",
-    type: "azure-openai",
-    apiHost: "",
     models: [],
   },
   {
