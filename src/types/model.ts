@@ -54,6 +54,12 @@ export interface ProviderUserConfig {
   enabled: boolean;
   /** 自定义模型启用状态 */
   modelEnabledStates?: Record<string, boolean>;
+  /** 自定义添加的模型列表 */
+  customModels?: Model[];
+  /** 提供商名称（用于自定义提供商） */
+  name?: string;
+  /** 提供商类型（用于自定义提供商） */
+  type?: ProviderType;
 }
 
 /**

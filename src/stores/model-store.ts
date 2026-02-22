@@ -64,6 +64,10 @@ function createProviderWithConfig(
         enabled: userConfig.modelEnabledStates?.[m.id] ?? m.enabled,
       }));
     }
+    // 添加自定义模型
+    if (userConfig.customModels && userConfig.customModels.length > 0) {
+      provider.models = [...provider.models, ...userConfig.customModels];
+    }
   }
 
   return provider;
@@ -104,13 +108,13 @@ export const useModelStore = create<ModelState>((set, get) => ({
         .map((c) => {
           const provider: ModelProvider = {
             id: c.id,
-            name: c.id,
-            type: "openai-compatible",
+            name: c.name || c.id,
+            type: c.type || "openai-compatible",
             apiKey: c.apiKey,
             apiHost: c.apiHost ?? "",
             enabled: c.enabled,
             isSystem: false,
-            models: [],
+            models: c.customModels || [],
           };
           return provider;
         });
@@ -131,17 +135,7 @@ export const useModelStore = create<ModelState>((set, get) => ({
   addProvider: async (provider) => {
     const providers = [...get().providers, provider];
     set({ providers });
-
-    // 保存用户配置
-    const configs: ProviderUserConfig[] = providers
-      .filter((p) => !p.isSystem)
-      .map((p) => ({
-        id: p.id,
-        apiKey: p.apiKey,
-        apiHost: p.apiHost,
-        enabled: p.enabled,
-      }));
-    await persistConfigs(configs);
+    await saveConfigs(providers);
   },
 
   updateProvider: async (provider) => {
@@ -149,33 +143,13 @@ export const useModelStore = create<ModelState>((set, get) => ({
       p.id === provider.id ? provider : p,
     );
     set({ providers });
-
-    // 保存用户配置
-    const configs: ProviderUserConfig[] = providers
-      .filter((p) => !p.isSystem)
-      .map((p) => ({
-        id: p.id,
-        apiKey: p.apiKey,
-        apiHost: p.apiHost,
-        enabled: p.enabled,
-      }));
-    await persistConfigs(configs);
+    await saveConfigs(providers);
   },
 
   removeProvider: async (providerId) => {
     const providers = get().providers.filter((p) => p.id !== providerId);
     set({ providers });
-
-    // 保存用户配置
-    const configs: ProviderUserConfig[] = providers
-      .filter((p) => !p.isSystem)
-      .map((p) => ({
-        id: p.id,
-        apiKey: p.apiKey,
-        apiHost: p.apiHost,
-        enabled: p.enabled,
-      }));
-    await persistConfigs(configs);
+    await saveConfigs(providers);
   },
 
   toggleProvider: async (providerId) => {
@@ -183,17 +157,7 @@ export const useModelStore = create<ModelState>((set, get) => ({
       p.id === providerId ? { ...p, enabled: !p.enabled } : p,
     );
     set({ providers });
-
-    // 保存用户配置
-    const configs: ProviderUserConfig[] = providers
-      .filter((p) => !p.isSystem)
-      .map((p) => ({
-        id: p.id,
-        apiKey: p.apiKey,
-        apiHost: p.apiHost,
-        enabled: p.enabled,
-      }));
-    await persistConfigs(configs);
+    await saveConfigs(providers);
   },
 
   updateModels: async (providerId, models) => {
@@ -201,6 +165,7 @@ export const useModelStore = create<ModelState>((set, get) => ({
       p.id === providerId ? { ...p, models } : p,
     );
     set({ providers });
+    await saveConfigs(providers);
   },
 
   toggleModel: async (providerId, modelId) => {
@@ -214,32 +179,7 @@ export const useModelStore = create<ModelState>((set, get) => ({
       };
     });
     set({ providers });
-
-    // 保存模型启用状态
-    const enabledStates: Record<string, Record<string, boolean>> = {};
-    for (const p of providers) {
-      if (!p.isSystem) continue;
-      const states: Record<string, boolean> = {};
-      for (const m of p.models) {
-        if (!m.enabled) {
-          states[m.id] = false;
-        }
-      }
-      if (Object.keys(states).length > 0) {
-        enabledStates[p.id] = states;
-      }
-    }
-
-    const configs: ProviderUserConfig[] = providers
-      .filter((p) => !p.isSystem)
-      .map((p) => ({
-        id: p.id,
-        apiKey: p.apiKey,
-        apiHost: p.apiHost,
-        enabled: p.enabled,
-        modelEnabledStates: enabledStates[p.id],
-      }));
-    await persistConfigs(configs);
+    await saveConfigs(providers);
   },
 
   addModel: async (providerId, model) => {
@@ -248,6 +188,7 @@ export const useModelStore = create<ModelState>((set, get) => ({
       return { ...p, models: [...p.models, model] };
     });
     set({ providers });
+    await saveConfigs(providers);
   },
 
   removeModel: async (providerId, modelId) => {
@@ -256,5 +197,56 @@ export const useModelStore = create<ModelState>((set, get) => ({
       return { ...p, models: p.models.filter((m) => m.id !== modelId) };
     });
     set({ providers });
+    await saveConfigs(providers);
   },
 }));
+
+/**
+ * 提取并保存所有的配置
+ */
+async function saveConfigs(providers: ModelProvider[]) {
+  const configs: ProviderUserConfig[] = providers.map((p) => {
+    // 找出所有自定义添加的模型（内置模板中不存在的模型）
+    const builtinTemplate = BUILTIN_PROVIDER_TEMPLATES.find(
+      (t) => t.id === p.id,
+    );
+    const builtinModelIds = new Set(
+      builtinTemplate?.models.map((m) => m.id) || [],
+    );
+    const customModels = p.models.filter((m) => !builtinModelIds.has(m.id));
+
+    // 获取内置模型的启用/禁用状态
+    const modelEnabledStates: Record<string, boolean> = {};
+    if (builtinTemplate) {
+      for (const m of p.models) {
+        if (builtinModelIds.has(m.id) && !m.enabled) {
+          modelEnabledStates[m.id] = false;
+        }
+      }
+    }
+
+    const config: ProviderUserConfig = {
+      id: p.id,
+      apiKey: p.apiKey,
+      apiHost: p.apiHost,
+      enabled: p.enabled,
+    };
+
+    if (!p.isSystem) {
+      config.name = p.name;
+      config.type = p.type;
+    }
+
+    if (customModels.length > 0) {
+      config.customModels = customModels;
+    }
+
+    if (Object.keys(modelEnabledStates).length > 0) {
+      config.modelEnabledStates = modelEnabledStates;
+    }
+
+    return config;
+  });
+
+  await persistConfigs(configs);
+}
