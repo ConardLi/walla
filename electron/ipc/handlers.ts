@@ -37,7 +37,7 @@ export function registerIPCHandlers(getWindow: WindowGetter) {
   registerStorageHandlers();
   registerDetectHandlers();
   registerMCPHandlers(mcpManager);
-  registerLLMHandlers();
+  registerLLMHandlers(getWindow);
 
   console.log("[IPC] All handlers registered");
 }

@@ -11,6 +11,7 @@ import type {
   LLMGenerateOptions,
   LLMGenerateResult,
   LLMStreamResult,
+  LLMStreamPart,
   LLMUsage,
   ChatMessage,
   MessagePart,
@@ -128,6 +129,31 @@ export async function stream(
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const streamResult = await aiStreamText(params as any);
 
+  async function* buildFullStream(): AsyncIterable<LLMStreamPart> {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    for await (const part of streamResult.fullStream as AsyncIterable<any>) {
+      if (part.type === "text-delta") {
+        yield {
+          type: "text-delta" as const,
+          textDelta: part.textDelta ?? part.text ?? "",
+        };
+      } else if (part.type === "reasoning-delta") {
+        yield {
+          type: "reasoning-delta" as const,
+          textDelta: part.textDelta ?? part.text ?? "",
+        };
+      } else if (part.type === "finish") {
+        yield {
+          type: "finish" as const,
+          finishReason: part.finishReason ?? "unknown",
+          totalUsage: part.totalUsage ?? {},
+        };
+      } else {
+        yield { type: part.type, ...part };
+      }
+    }
+  }
+
   const resultPromise = (async (): Promise<LLMGenerateResult> => {
     let fullText = "";
     let usage: LLMUsage = {
@@ -137,12 +163,13 @@ export async function stream(
     };
     let finishReason = "unknown";
 
-    for await (const part of streamResult.fullStream) {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    for await (const part of streamResult.fullStream as AsyncIterable<any>) {
       if (part.type === "text-delta") {
-        fullText += part.text;
+        fullText += part.textDelta ?? part.text ?? "";
       } else if (part.type === "finish") {
-        usage = normalizeUsage(part.totalUsage);
-        finishReason = part.finishReason;
+        usage = normalizeUsage(part.totalUsage ?? {});
+        finishReason = part.finishReason ?? "unknown";
       }
     }
 
@@ -151,6 +178,7 @@ export async function stream(
 
   return {
     textStream: streamResult.textStream,
+    fullStream: buildFullStream(),
     result: resultPromise,
   };
 }

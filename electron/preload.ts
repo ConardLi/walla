@@ -120,6 +120,10 @@ const electronAPI = {
     ipcRenderer.invoke(IPC_CHANNELS.LLM_FETCH_MODELS, params),
   llmHealthCheck: (params: unknown) =>
     ipcRenderer.invoke(IPC_CHANNELS.LLM_HEALTH_CHECK, params),
+  llmChatStream: (params: unknown) =>
+    ipcRenderer.invoke(IPC_CHANNELS.LLM_CHAT_STREAM, params),
+  llmChatCancel: (requestId: string) =>
+    ipcRenderer.invoke(IPC_CHANNELS.LLM_CHAT_CANCEL, requestId),
 
   // 系统对话框
   selectDirectory: () => ipcRenderer.invoke(IPC_CHANNELS.SELECT_DIRECTORY),
@@ -160,6 +164,37 @@ const electronAPI = {
         IPC_CHANNELS.EVENT_OPERATION_CONFIRM,
         callback,
       );
+    };
+  },
+
+  onLLMStreamChunk: (callback: (event: unknown, data: unknown) => void) => {
+    ipcRenderer.on(IPC_CHANNELS.EVENT_LLM_STREAM_CHUNK, callback);
+    return () => {
+      ipcRenderer.removeListener(IPC_CHANNELS.EVENT_LLM_STREAM_CHUNK, callback);
+    };
+  },
+
+  onLLMStreamReasoning: (callback: (event: unknown, data: unknown) => void) => {
+    ipcRenderer.on(IPC_CHANNELS.EVENT_LLM_STREAM_REASONING, callback);
+    return () => {
+      ipcRenderer.removeListener(
+        IPC_CHANNELS.EVENT_LLM_STREAM_REASONING,
+        callback,
+      );
+    };
+  },
+
+  onLLMStreamEnd: (callback: (event: unknown, data: unknown) => void) => {
+    ipcRenderer.on(IPC_CHANNELS.EVENT_LLM_STREAM_END, callback);
+    return () => {
+      ipcRenderer.removeListener(IPC_CHANNELS.EVENT_LLM_STREAM_END, callback);
+    };
+  },
+
+  onLLMStreamError: (callback: (event: unknown, data: unknown) => void) => {
+    ipcRenderer.on(IPC_CHANNELS.EVENT_LLM_STREAM_ERROR, callback);
+    return () => {
+      ipcRenderer.removeListener(IPC_CHANNELS.EVENT_LLM_STREAM_ERROR, callback);
     };
   },
 };

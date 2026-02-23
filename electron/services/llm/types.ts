@@ -107,9 +107,26 @@ export interface LLMStreamCallbacks {
   onError?: (error: Error) => void;
 }
 
+export type LLMStreamPart =
+  | { type: "text-delta"; textDelta: string }
+  | { type: "reasoning-delta"; textDelta: string }
+  | {
+      type: "finish";
+      finishReason: string;
+      totalUsage: {
+        inputTokens?: number;
+        outputTokens?: number;
+        totalTokens?: number;
+      };
+    }
+  | { type: "error"; error: unknown }
+  | { type: string; [key: string]: unknown };
+
 export interface LLMStreamResult {
   /** 异步文本流迭代器 */
   textStream: AsyncIterable<string>;
+  /** 完整事件流（包含 text-delta / reasoning-delta / finish 等） */
+  fullStream: AsyncIterable<LLMStreamPart>;
   /** 等待完整结果的 Promise */
   result: Promise<LLMGenerateResult>;
 }

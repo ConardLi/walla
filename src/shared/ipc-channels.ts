@@ -70,6 +70,12 @@ export const IPC_CHANNELS = {
   // LLM
   LLM_FETCH_MODELS: "llm:fetch-models",
   LLM_HEALTH_CHECK: "llm:health-check",
+  LLM_CHAT_STREAM: "llm:chat-stream",
+  LLM_CHAT_CANCEL: "llm:chat-cancel",
+  EVENT_LLM_STREAM_CHUNK: "event:llm-stream-chunk",
+  EVENT_LLM_STREAM_REASONING: "event:llm-stream-reasoning",
+  EVENT_LLM_STREAM_END: "event:llm-stream-end",
+  EVENT_LLM_STREAM_ERROR: "event:llm-stream-error",
 
   // 系统
   APP_GET_VERSION: "app:get-version",

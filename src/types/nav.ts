@@ -9,6 +9,7 @@ export type NavPage =
   | "settings"
   | "playground";
 
+export type TaskMode = "agent" | "chat";
 export type TaskListGroupMode = "time" | "agent" | "workspace";
 export type TaskListSortMode = "created" | "updated";
 

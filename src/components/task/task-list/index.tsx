@@ -34,8 +34,15 @@ import {
 import { TaskItem } from "./task-item";
 import { SessionSearch } from "./session-search";
 import { groupByTime, groupByWorkspace, groupByAgent } from "./task-list-utils";
+import { TaskModeTab } from "@/components/chat/task-mode-tab";
+import type { TaskMode } from "@/types/nav";
 
-export function TaskList() {
+interface TaskListProps {
+  taskMode: TaskMode;
+  onTaskModeChange: (mode: TaskMode) => void;
+}
+
+export function TaskList({ taskMode, onTaskModeChange }: TaskListProps) {
   const groupMode = useNavStore((s) => s.taskListGroupMode);
   const setGroupMode = useNavStore((s) => s.setTaskListGroupMode);
   const sortMode = useNavStore((s) => s.taskListSortMode);
@@ -91,6 +98,7 @@ export function TaskList() {
     <div className="flex flex-col flex-1 overflow-hidden">
       {/* 分组模式切换 + 新建按钮 */}
       <div className="flex items-center gap-1 px-3 py-2 border-b">
+        <TaskModeTab value={taskMode} onChange={onTaskModeChange} />
         <div className="flex-1" />
         <TooltipProvider>
           <Popover open={menuOpen} onOpenChange={setMenuOpen}>

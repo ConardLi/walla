@@ -452,3 +452,56 @@ export interface LLMHealthCheckResponse {
   /** 错误信息 */
   error?: string;
 }
+
+export interface LLMChatStreamRequest {
+  /** 请求 ID，用于匹配流式事件 */
+  requestId: string;
+  /** 提供商类型 */
+  type: string;
+  /** 模型 ID */
+  model: string;
+  /** API Key */
+  apiKey?: string;
+  /** 基础 URL */
+  baseURL?: string;
+  /** 对话消息 */
+  messages: Array<{
+    role: "system" | "user" | "assistant";
+    content: string;
+  }>;
+  /** 温度 */
+  temperature?: number;
+  /** Top-P */
+  topP?: number;
+  /** 最大 token 数 */
+  maxTokens?: number;
+  /** 频率惩罚 */
+  frequencyPenalty?: number;
+  /** 存在惩罚 */
+  presencePenalty?: number;
+}
+
+export interface LLMStreamChunkEvent {
+  requestId: string;
+  text: string;
+}
+
+export interface LLMStreamReasoningEvent {
+  requestId: string;
+  text: string;
+}
+
+export interface LLMStreamEndEvent {
+  requestId: string;
+  usage?: {
+    promptTokens: number;
+    completionTokens: number;
+    totalTokens: number;
+  };
+  finishReason?: string;
+}
+
+export interface LLMStreamErrorEvent {
+  requestId: string;
+  error: string;
+}

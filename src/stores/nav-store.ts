@@ -4,12 +4,18 @@
 
 import { create } from "zustand";
 import * as ipc from "@/services/ipc-client";
-import type { NavPage, TaskListGroupMode, TaskListSortMode } from "@/types/nav";
+import type {
+  NavPage,
+  TaskMode,
+  TaskListGroupMode,
+  TaskListSortMode,
+} from "@/types/nav";
 
 export type TaskListViewMode = "normal" | "compact";
 
 interface NavState {
   activePage: NavPage;
+  taskMode: TaskMode;
   taskListCollapsed: boolean;
   taskListGroupMode: TaskListGroupMode;
   taskListSortMode: TaskListSortMode;
@@ -17,6 +23,7 @@ interface NavState {
   navLoaded: boolean;
   loadNavSettings: () => Promise<void>;
   setActivePage: (page: NavPage) => void;
+  setTaskMode: (mode: TaskMode) => void;
   toggleTaskList: () => void;
   setTaskListCollapsed: (collapsed: boolean) => void;
   setTaskListGroupMode: (mode: TaskListGroupMode) => void;
@@ -58,6 +65,7 @@ async function persistTaskListSortMode(mode: TaskListSortMode) {
 
 export const useNavStore = create<NavState>((set, get) => ({
   activePage: "task",
+  taskMode: "agent",
   taskListCollapsed: true,
   taskListGroupMode: "time",
   taskListSortMode: "updated",
@@ -108,6 +116,7 @@ export const useNavStore = create<NavState>((set, get) => ({
   },
 
   setActivePage: (page) => set({ activePage: page }),
+  setTaskMode: (mode) => set({ taskMode: mode }),
 
   toggleTaskList: () => {
     const next = !get().taskListCollapsed;

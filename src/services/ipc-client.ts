@@ -420,6 +420,58 @@ export async function llmHealthCheck(
   return result;
 }
 
+export async function llmChatStream(
+  params: import("@/shared/ipc-types").LLMChatStreamRequest,
+): Promise<{ ok: boolean }> {
+  logSend("system", "llm:chat-stream", params);
+  const result = await getAPI().llmChatStream(params);
+  logResponse("system", "llm:chat-stream", result);
+  return result;
+}
+
+export async function llmChatCancel(
+  requestId: string,
+): Promise<{ ok: boolean }> {
+  logSend("system", "llm:chat-cancel", requestId);
+  const result = await getAPI().llmChatCancel(requestId);
+  logResponse("system", "llm:chat-cancel", result);
+  return result;
+}
+
+export function onLLMStreamChunk(
+  callback: (data: import("@/shared/ipc-types").LLMStreamChunkEvent) => void,
+): () => void {
+  return getAPI().onLLMStreamChunk((_event: unknown, data: unknown) => {
+    callback(data as import("@/shared/ipc-types").LLMStreamChunkEvent);
+  });
+}
+
+export function onLLMStreamReasoning(
+  callback: (
+    data: import("@/shared/ipc-types").LLMStreamReasoningEvent,
+  ) => void,
+): () => void {
+  return getAPI().onLLMStreamReasoning((_event: unknown, data: unknown) => {
+    callback(data as import("@/shared/ipc-types").LLMStreamReasoningEvent);
+  });
+}
+
+export function onLLMStreamEnd(
+  callback: (data: import("@/shared/ipc-types").LLMStreamEndEvent) => void,
+): () => void {
+  return getAPI().onLLMStreamEnd((_event: unknown, data: unknown) => {
+    callback(data as import("@/shared/ipc-types").LLMStreamEndEvent);
+  });
+}
+
+export function onLLMStreamError(
+  callback: (data: import("@/shared/ipc-types").LLMStreamErrorEvent) => void,
+): () => void {
+  return getAPI().onLLMStreamError((_event: unknown, data: unknown) => {
+    callback(data as import("@/shared/ipc-types").LLMStreamErrorEvent);
+  });
+}
+
 // ============ 事件订阅 ============
 
 export function onSessionUpdate(
