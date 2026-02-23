@@ -22,6 +22,7 @@ export interface BuiltinProviderTemplate {
     id: string;
     name: string;
     group?: string;
+    type?: ProviderType;
   }>;
 }
 
@@ -447,6 +448,21 @@ export const BUILTIN_PROVIDER_TEMPLATES: BuiltinProviderTemplate[] = [
       },
     ],
   },
+  {
+    id: "302.AI",
+    name: "302.AI",
+    icon: "/providers/302ai.webp",
+    type: "openai-compatible",
+    apiHost: "https://api.302.ai/v1",
+    models: [
+      {
+        id: "gemini-2.5-flash",
+        name: "Gemini 2.5 Flash",
+        group: "Gemini",
+        type: "gemini",
+      },
+    ],
+  },
 ];
 
 export function createProviderFromTemplate(
@@ -465,6 +481,7 @@ export function createProviderFromTemplate(
       providerId: template.id,
       group: m.group,
       enabled: true,
+      type: m.type,
     })),
     enabled: false,
     isSystem: true,

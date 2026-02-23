@@ -400,6 +400,26 @@ export async function mcpDisconnectAll(): Promise<{ ok: boolean }> {
   return result;
 }
 
+// ============ LLM ============
+
+export async function llmFetchModels(
+  params: import("@/shared/ipc-types").LLMFetchModelsRequest,
+): Promise<import("@/shared/ipc-types").LLMFetchModelsResponse> {
+  logSend("system", "llm:fetch-models", params);
+  const result = await getAPI().llmFetchModels(params);
+  logResponse("system", "llm:fetch-models", result);
+  return result;
+}
+
+export async function llmHealthCheck(
+  params: import("@/shared/ipc-types").LLMHealthCheckRequest,
+): Promise<import("@/shared/ipc-types").LLMHealthCheckResponse> {
+  logSend("system", "llm:health-check", params);
+  const result = await getAPI().llmHealthCheck(params);
+  logResponse("system", "llm:health-check", result);
+  return result;
+}
+
 // ============ 事件订阅 ============
 
 export function onSessionUpdate(

@@ -87,13 +87,10 @@ export function AddProviderDialog({
     if (!name.trim()) return;
 
     if (isEdit && editProvider) {
-      const builtinTemplate = BUILTIN_PROVIDER_TEMPLATES.find(
-        (t) => t.id === editProvider.id,
-      );
       updateProvider({
         ...editProvider,
         name: name.trim(),
-        type: builtinTemplate ? builtinTemplate.type : type,
+        type,
         apiHost: apiHost.trim(),
         apiKey: apiKey.trim(),
         apiVersion: apiVersion.trim() || undefined,

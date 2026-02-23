@@ -115,6 +115,12 @@ const electronAPI = {
   detectAgentCli: (params: unknown) =>
     ipcRenderer.invoke(IPC_CHANNELS.AGENT_DETECT_CLI, params),
 
+  // LLM
+  llmFetchModels: (params: unknown) =>
+    ipcRenderer.invoke(IPC_CHANNELS.LLM_FETCH_MODELS, params),
+  llmHealthCheck: (params: unknown) =>
+    ipcRenderer.invoke(IPC_CHANNELS.LLM_HEALTH_CHECK, params),
+
   // 系统对话框
   selectDirectory: () => ipcRenderer.invoke(IPC_CHANNELS.SELECT_DIRECTORY),
 

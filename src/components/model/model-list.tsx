@@ -8,8 +8,19 @@ import { PROVIDER_TYPE_LABELS } from "@/constants/model-providers";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
-import { Plus, Trash2, Search, Cpu, Tags, Edit } from "lucide-react";
+import {
+  Plus,
+  Trash2,
+  Search,
+  Cpu,
+  Tags,
+  Edit,
+  Activity,
+  Loader2,
+} from "lucide-react";
 import { AddModelDialog } from "./add-model-dialog";
+import * as ipc from "@/services/ipc-client";
+import { toast } from "sonner";
 
 interface ModelListProps {
   provider: ModelProvider;
@@ -21,8 +32,42 @@ export function ModelList({ provider }: ModelListProps) {
   const [editingModel, setEditingModel] = useState<
     (typeof provider.models)[0] | null
   >(null);
+  const [checkingModels, setCheckingModels] = useState<Set<string>>(new Set());
   const toggleModel = useModelStore((s) => s.toggleModel);
   const removeModel = useModelStore((s) => s.removeModel);
+
+  const handleHealthCheck = async (modelId: string) => {
+    setCheckingModels((prev) => new Set(prev).add(modelId));
+
+    try {
+      const result = await ipc.llmHealthCheck({
+        type: provider.type,
+        model: modelId,
+        apiKey: provider.apiKey,
+        baseURL: provider.apiHost,
+      });
+
+      if (result.healthy) {
+        toast.success(`模型 ${modelId} 连接正常`, {
+          description: `响应时间: ${result.latency}ms`,
+        });
+      } else {
+        toast.error(`模型 ${modelId} 连接失败`, {
+          description: result.error || "未知错误",
+        });
+      }
+    } catch (error) {
+      toast.error(`模型 ${modelId} 检测失败`, {
+        description: error instanceof Error ? error.message : "未知错误",
+      });
+    } finally {
+      setCheckingModels((prev) => {
+        const next = new Set(prev);
+        next.delete(modelId);
+        return next;
+      });
+    }
+  };
 
   const filtered = search
     ? provider.models.filter(
@@ -180,6 +225,20 @@ export function ModelList({ provider }: ModelListProps) {
                       </div>
 
                       <div className="flex items-center gap-1 shrink-0">
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-7 w-7 opacity-0 group-hover/model:opacity-100 transition-opacity text-muted-foreground hover:bg-green-500/10 hover:text-green-600"
+                          onClick={() => handleHealthCheck(model.id)}
+                          disabled={checkingModels.has(model.id)}
+                          title="健康检测"
+                        >
+                          {checkingModels.has(model.id) ? (
+                            <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                          ) : (
+                            <Activity className="h-3.5 w-3.5" />
+                          )}
+                        </Button>
                         <Button
                           variant="ghost"
                           size="icon"

@@ -4,6 +4,7 @@ import { useState, useEffect, useMemo } from "react";
 import { useModelStore } from "@/stores/model-store";
 import type { Model, ProviderType } from "@/types/model";
 import { PROVIDER_TYPE_OPTIONS } from "@/constants/model-providers";
+import * as ipc from "@/services/ipc-client";
 import {
   Dialog,
   DialogContent,
@@ -45,6 +46,10 @@ export function AddModelDialog({
   const [modelType, setModelType] = useState<ProviderType | "default">(
     "default",
   );
+  const [modelOptions, setModelOptions] = useState<
+    Array<{ value: string; label: string }>
+  >([]);
+  const [loadingModels, setLoadingModels] = useState(false);
   const addModel = useModelStore((s) => s.addModel);
   const updateModel = useModelStore((s) => s.updateModel);
   const providers = useModelStore((s) => s.providers);
@@ -76,8 +81,36 @@ export function AddModelDialog({
         setGroup("");
         setModelType("default");
       }
+
+      // 获取模型列表
+      fetchModelList();
     }
   }, [open, editModel]);
+
+  const fetchModelList = async () => {
+    const provider = providers.find((p) => p.id === providerId);
+    if (!provider) return;
+
+    setLoadingModels(true);
+    try {
+      const response = await ipc.llmFetchModels({
+        type: provider.type,
+        apiKey: provider.apiKey,
+        baseURL: provider.apiHost,
+      });
+
+      const options = response.models.map((m) => ({
+        value: m.id,
+        label: m.name || m.id,
+      }));
+      setModelOptions(options);
+    } catch (error) {
+      console.error("Failed to fetch models:", error);
+      setModelOptions([]);
+    } finally {
+      setLoadingModels(false);
+    }
+  };
 
   const handleSubmit = () => {
     if (!modelId.trim()) return;
@@ -121,16 +154,19 @@ export function AddModelDialog({
               <Key className="h-4 w-4 text-muted-foreground" />
               模型 ID <span className="text-destructive">*</span>
             </label>
-            <Input
+            <Combobox
               value={modelId}
-              onChange={(e) => setModelId(e.target.value)}
-              placeholder="如: gpt-4o, claude-3-5-sonnet-20241022"
-              className="text-sm bg-muted/30"
-              autoFocus
-              disabled={isEdit}
+              onChange={setModelId}
+              options={modelOptions}
+              placeholder={loadingModels ? "加载中..." : "选择或输入模型 ID"}
+              emptyText="未找到模型，请手动输入"
+              className="text-sm"
+              disabled={isEdit || loadingModels}
             />
             <p className="text-xs text-muted-foreground ml-1">
-              调用 API 时实际使用的模型标识符，必须完全准确。
+              {loadingModels
+                ? "正在从服务商获取可用模型列表..."
+                : "调用 API 时实际使用的模型标识符，必须完全准确。"}
             </p>
           </div>
 

@@ -56,6 +56,8 @@ export interface ProviderUserConfig {
   enabled: boolean;
   /** 自定义模型启用状态 */
   modelEnabledStates?: Record<string, boolean>;
+  /** 内置模型的覆盖配置（如修改了名称、分组或协议类型） */
+  modelOverrides?: Record<string, Partial<Model>>;
   /** 自定义添加的模型列表 */
   customModels?: Model[];
   /** 提供商名称（用于自定义提供商） */

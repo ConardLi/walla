@@ -31,6 +31,7 @@ export function Combobox({
 }: ComboboxProps) {
   const [open, setOpen] = React.useState(false);
   const [inputValue, setInputValue] = React.useState(value);
+  const listRef = React.useRef<HTMLDivElement>(null);
 
   React.useEffect(() => {
     setInputValue(value);
@@ -80,20 +81,30 @@ export function Combobox({
         </Button>
       </PopoverTrigger>
       <PopoverContent
-        className="w-[--radix-popover-trigger-width] p-0"
+        className="w-[--radix-popover-trigger-width] p-0 flex flex-col max-h-[var(--radix-popover-content-available-height)] no-drag"
         align="start"
+        onOpenAutoFocus={(e) => e.preventDefault()}
       >
-        <div className="flex items-center border-b px-3">
+        <div className="flex items-center border-b px-3 no-drag">
           <input
             value={inputValue}
             onChange={handleInputChange}
             onKeyDown={handleKeyDown}
             placeholder={placeholder}
             className="flex-1 bg-transparent py-2 text-sm outline-none placeholder:text-muted-foreground"
-            autoFocus
           />
         </div>
-        <div className="max-h-48 overflow-auto p-1">
+        <div
+          ref={listRef}
+          className="h-60 overflow-y-auto overflow-x-hidden p-1 no-drag"
+          onWheel={(e) => {
+            const el = listRef.current;
+            if (!el) return;
+            el.scrollTop += e.deltaY;
+            e.preventDefault();
+            e.stopPropagation();
+          }}
+        >
           {filteredOptions.length === 0 ? (
             <div className="py-3 text-center text-sm text-muted-foreground">
               {emptyText}
@@ -103,7 +114,7 @@ export function Combobox({
               <div
                 key={option.value}
                 className={cn(
-                  "relative flex cursor-pointer select-none items-center rounded-sm px-2 py-1.5 text-sm outline-none",
+                  "relative flex cursor-pointer select-none items-center rounded-sm px-2 py-1.5 text-sm outline-none no-drag",
                   "hover:bg-accent hover:text-accent-foreground",
                   value === option.value && "bg-accent",
                 )}

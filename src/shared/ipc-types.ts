@@ -403,3 +403,52 @@ export interface StorageInfo {
 export interface StorageGetInfoResponse {
   namespaces: StorageInfo[];
 }
+
+// ============ LLM ============
+
+export interface LLMFetchModelsRequest {
+  /** 提供商类型 */
+  type: string;
+  /** API Key */
+  apiKey?: string;
+  /** 基础 URL */
+  baseURL?: string;
+  /** Azure 资源名称 */
+  azureResourceName?: string;
+  /** Azure API 版本 */
+  azureApiVersion?: string;
+}
+
+export interface LLMModelInfo {
+  id: string;
+  name?: string;
+  created?: number;
+}
+
+export interface LLMFetchModelsResponse {
+  models: LLMModelInfo[];
+}
+
+export interface LLMHealthCheckRequest {
+  /** 提供商类型 */
+  type: string;
+  /** 模型 ID */
+  model: string;
+  /** API Key */
+  apiKey?: string;
+  /** 基础 URL */
+  baseURL?: string;
+  /** Azure 资源名称 */
+  azureResourceName?: string;
+  /** Azure API 版本 */
+  azureApiVersion?: string;
+}
+
+export interface LLMHealthCheckResponse {
+  /** 是否健康 */
+  healthy: boolean;
+  /** 响应时间（毫秒） */
+  latency?: number;
+  /** 错误信息 */
+  error?: string;
+}

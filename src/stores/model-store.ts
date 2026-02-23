@@ -63,12 +63,22 @@ function createProviderWithConfig(
     if (userConfig.apiHost && userConfig.apiHost !== template.apiHost) {
       provider.apiHost = userConfig.apiHost;
     }
-    // 合并模型启用状态
-    if (userConfig.modelEnabledStates) {
-      provider.models = provider.models.map((m) => ({
-        ...m,
-        enabled: userConfig.modelEnabledStates?.[m.id] ?? m.enabled,
-      }));
+    if (userConfig.name && userConfig.name !== template.name) {
+      provider.name = userConfig.name;
+    }
+    if (userConfig.type && userConfig.type !== template.type) {
+      provider.type = userConfig.type;
+    }
+    // 合并模型启用状态和覆盖配置
+    if (userConfig.modelEnabledStates || userConfig.modelOverrides) {
+      provider.models = provider.models.map((m) => {
+        const overrides = userConfig.modelOverrides?.[m.id] || {};
+        return {
+          ...m,
+          ...overrides,
+          enabled: userConfig.modelEnabledStates?.[m.id] ?? m.enabled,
+        };
+      });
     }
     // 添加自定义模型
     if (userConfig.customModels && userConfig.customModels.length > 0) {
@@ -235,12 +245,28 @@ async function saveConfigs(providers: ModelProvider[]) {
     );
     const customModels = p.models.filter((m) => !builtinModelIds.has(m.id));
 
-    // 获取内置模型的启用/禁用状态
+    // 获取内置模型的启用/禁用状态和覆盖配置
     const modelEnabledStates: Record<string, boolean> = {};
+    const modelOverrides: Record<string, Partial<Model>> = {};
+
     if (builtinTemplate) {
       for (const m of p.models) {
-        if (builtinModelIds.has(m.id) && !m.enabled) {
-          modelEnabledStates[m.id] = false;
+        if (builtinModelIds.has(m.id)) {
+          if (!m.enabled) {
+            modelEnabledStates[m.id] = false;
+          }
+
+          const original = builtinTemplate.models.find((bm) => bm.id === m.id);
+          if (original) {
+            const overrides: Partial<Model> = {};
+            if (m.name !== original.name) overrides.name = m.name;
+            if (m.group !== original.group) overrides.group = m.group;
+            if (m.type !== original.type) overrides.type = m.type;
+
+            if (Object.keys(overrides).length > 0) {
+              modelOverrides[m.id] = overrides;
+            }
+          }
         }
       }
     }
@@ -252,10 +278,11 @@ async function saveConfigs(providers: ModelProvider[]) {
       enabled: p.enabled,
     };
 
-    // 只有非内置提供商才保存 name 和 type
-    // 内置提供商的 name 和 type 应该始终使用模板中的定义
-    if (!p.isSystem && !builtinTemplate) {
+    // 允许内置提供商覆盖 name 和 type
+    if (p.name !== builtinTemplate?.name) {
       config.name = p.name;
+    }
+    if (p.type !== builtinTemplate?.type) {
       config.type = p.type;
     }
 
@@ -265,6 +292,10 @@ async function saveConfigs(providers: ModelProvider[]) {
 
     if (Object.keys(modelEnabledStates).length > 0) {
       config.modelEnabledStates = modelEnabledStates;
+    }
+
+    if (Object.keys(modelOverrides).length > 0) {
+      config.modelOverrides = modelOverrides;
     }
 
     return config;

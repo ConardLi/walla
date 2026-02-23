@@ -67,6 +67,10 @@ export const IPC_CHANNELS = {
   // Agent 探测
   AGENT_DETECT_CLI: "agent:detect-cli",
 
+  // LLM
+  LLM_FETCH_MODELS: "llm:fetch-models",
+  LLM_HEALTH_CHECK: "llm:health-check",
+
   // 系统
   APP_GET_VERSION: "app:get-version",
   SELECT_DIRECTORY: "dialog:select-directory",

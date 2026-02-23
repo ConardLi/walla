@@ -12,6 +12,7 @@ import { registerSkillHandlers } from "./handlers/skill-handlers";
 import { registerStorageHandlers } from "./handlers/storage-handlers";
 import { registerDetectHandlers } from "./handlers/detect-handlers";
 import { registerMCPHandlers } from "./handlers/mcp-handlers";
+import { registerLLMHandlers } from "./handlers/llm-handlers";
 
 type WindowGetter = () => BrowserWindow | null;
 
@@ -36,6 +37,7 @@ export function registerIPCHandlers(getWindow: WindowGetter) {
   registerStorageHandlers();
   registerDetectHandlers();
   registerMCPHandlers(mcpManager);
+  registerLLMHandlers();
 
   console.log("[IPC] All handlers registered");
 }
