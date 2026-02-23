@@ -13,6 +13,10 @@ import type {
 } from "@/types/chat";
 import { DEFAULT_CHAT_SETTINGS } from "@/types/chat";
 
+export type ChatConvGroupMode = "time" | "model";
+export type ChatConvSortMode = "created" | "updated";
+export type ChatConvViewMode = "normal" | "compact";
+
 const STORAGE_NAMESPACE = "chat";
 const CONVERSATIONS_KEY = "conversations";
 const SETTINGS_KEY = "settings";
@@ -40,6 +44,12 @@ interface ChatState {
   activeRequestId: string | null;
   /** 是否已加载 */
   loaded: boolean;
+  /** 分组模式 */
+  groupMode: ChatConvGroupMode;
+  /** 排序模式 */
+  sortMode: ChatConvSortMode;
+  /** 视图模式 */
+  viewMode: ChatConvViewMode;
 
   /** 加载持久化数据 */
   load: () => Promise<void>;
@@ -49,6 +59,14 @@ interface ChatState {
   switchConversation: (id: string) => void;
   /** 删除对话 */
   removeConversation: (id: string) => void;
+  /** 切换收藏状态 */
+  toggleFavorite: (id: string) => void;
+  /** 设置分组模式 */
+  setGroupMode: (mode: ChatConvGroupMode) => void;
+  /** 设置排序模式 */
+  setSortMode: (mode: ChatConvSortMode) => void;
+  /** 设置视图模式 */
+  setViewMode: (mode: ChatConvViewMode) => void;
   /** 设置选中的模型 */
   setSelectedModel: (providerId: string, modelId: string) => void;
   /** 更新模型设置 */
@@ -83,6 +101,9 @@ export const useChatStore = create<ChatState>((set, get) => ({
   isStreaming: false,
   activeRequestId: null,
   loaded: false,
+  groupMode: "time",
+  sortMode: "updated",
+  viewMode: "compact",
 
   load: async () => {
     try {
@@ -143,6 +164,19 @@ export const useChatStore = create<ChatState>((set, get) => ({
   switchConversation: (id) => {
     set({ activeConversationId: id });
   },
+
+  toggleFavorite: (id) => {
+    set((s) => ({
+      conversations: s.conversations.map((c) =>
+        c.id === id ? { ...c, favorited: !c.favorited } : c,
+      ),
+    }));
+    persistConversations(get().conversations);
+  },
+
+  setGroupMode: (mode) => set({ groupMode: mode }),
+  setSortMode: (mode) => set({ sortMode: mode }),
+  setViewMode: (mode) => set({ viewMode: mode }),
 
   removeConversation: (id) => {
     set((s) => {

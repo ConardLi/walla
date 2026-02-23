@@ -26,6 +26,8 @@ export interface ChatConversation {
   modelId: string;
   createdAt: number;
   updatedAt: number;
+  /** 是否收藏 */
+  favorited?: boolean;
 }
 
 export interface ChatModelSettings {
