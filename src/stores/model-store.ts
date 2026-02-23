@@ -38,6 +38,12 @@ interface ModelState {
   toggleModel: (providerId: string, modelId: string) => Promise<void>;
   /** 添加自定义模型到指定提供商 */
   addModel: (providerId: string, model: Model) => Promise<void>;
+  /** 更新模型信息 */
+  updateModel: (
+    providerId: string,
+    modelId: string,
+    model: Partial<Model>,
+  ) => Promise<void>;
   /** 删除自定义模型 */
   removeModel: (providerId: string, modelId: string) => Promise<void>;
 }
@@ -191,6 +197,20 @@ export const useModelStore = create<ModelState>((set, get) => ({
     await saveConfigs(providers);
   },
 
+  updateModel: async (providerId, modelId, updates) => {
+    const providers = get().providers.map((p) => {
+      if (p.id !== providerId) return p;
+      return {
+        ...p,
+        models: p.models.map((m) =>
+          m.id === modelId ? { ...m, ...updates } : m,
+        ),
+      };
+    });
+    set({ providers });
+    await saveConfigs(providers);
+  },
+
   removeModel: async (providerId, modelId) => {
     const providers = get().providers.map((p) => {
       if (p.id !== providerId) return p;
@@ -232,7 +252,9 @@ async function saveConfigs(providers: ModelProvider[]) {
       enabled: p.enabled,
     };
 
-    if (!p.isSystem) {
+    // 只有非内置提供商才保存 name 和 type
+    // 内置提供商的 name 和 type 应该始终使用模板中的定义
+    if (!p.isSystem && !builtinTemplate) {
       config.name = p.name;
       config.type = p.type;
     }

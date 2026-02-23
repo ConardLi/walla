@@ -38,6 +38,8 @@ export interface Model {
   capabilities?: ModelType[];
   /** 是否启用 */
   enabled: boolean;
+  /** API 协议类型（可选，默认使用提供商的协议） */
+  type?: ProviderType;
 }
 
 /**

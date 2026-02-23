@@ -4,10 +4,11 @@ import { useState } from "react";
 import { cn } from "@/lib/utils";
 import type { ModelProvider } from "@/types/model";
 import { useModelStore } from "@/stores/model-store";
+import { PROVIDER_TYPE_LABELS } from "@/constants/model-providers";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
-import { Plus, Trash2, Search, Cpu, Tags } from "lucide-react";
+import { Plus, Trash2, Search, Cpu, Tags, Edit } from "lucide-react";
 import { AddModelDialog } from "./add-model-dialog";
 
 interface ModelListProps {
@@ -17,6 +18,9 @@ interface ModelListProps {
 export function ModelList({ provider }: ModelListProps) {
   const [search, setSearch] = useState("");
   const [showAddModel, setShowAddModel] = useState(false);
+  const [editingModel, setEditingModel] = useState<
+    (typeof provider.models)[0] | null
+  >(null);
   const toggleModel = useModelStore((s) => s.toggleModel);
   const removeModel = useModelStore((s) => s.removeModel);
 
@@ -54,7 +58,10 @@ export function ModelList({ provider }: ModelListProps) {
         <Button
           variant="default"
           className="h-10 px-4 shadow-sm"
-          onClick={() => setShowAddModel(true)}
+          onClick={() => {
+            setEditingModel(null);
+            setShowAddModel(true);
+          }}
         >
           <Plus className="h-4 w-4 mr-1.5" />
           添加自定义模型
@@ -73,7 +80,10 @@ export function ModelList({ provider }: ModelListProps) {
               variant="outline"
               size="sm"
               className="mt-4"
-              onClick={() => setShowAddModel(true)}
+              onClick={() => {
+                setEditingModel(null);
+                setShowAddModel(true);
+              }}
             >
               <Plus className="h-4 w-4 mr-1.5" />
               立即添加
@@ -118,6 +128,15 @@ export function ModelList({ provider }: ModelListProps) {
                           >
                             {model.name}
                           </h4>
+                          {model.type && model.type !== provider.type && (
+                            <Badge
+                              variant="outline"
+                              className="h-4 px-1.5 text-[9px] uppercase tracking-wider shrink-0 bg-blue-500/10 text-blue-600 border-blue-500/30"
+                              title={`使用自定义协议: ${PROVIDER_TYPE_LABELS[model.type] || model.type}`}
+                            >
+                              {PROVIDER_TYPE_LABELS[model.type] || model.type}
+                            </Badge>
+                          )}
                           {model.capabilities &&
                             model.capabilities.length > 0 && (
                               <Badge
@@ -160,15 +179,29 @@ export function ModelList({ provider }: ModelListProps) {
                         ))}
                       </div>
 
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="h-7 w-7 opacity-0 group-hover/model:opacity-100 transition-opacity text-muted-foreground hover:bg-destructive/10 hover:text-destructive shrink-0"
-                        onClick={() => removeModel(provider.id, model.id)}
-                        title="删除模型"
-                      >
-                        <Trash2 className="h-3.5 w-3.5" />
-                      </Button>
+                      <div className="flex items-center gap-1 shrink-0">
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-7 w-7 opacity-0 group-hover/model:opacity-100 transition-opacity text-muted-foreground hover:bg-primary/10 hover:text-primary"
+                          onClick={() => {
+                            setEditingModel(model);
+                            setShowAddModel(true);
+                          }}
+                          title="编辑模型"
+                        >
+                          <Edit className="h-3.5 w-3.5" />
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-7 w-7 opacity-0 group-hover/model:opacity-100 transition-opacity text-muted-foreground hover:bg-destructive/10 hover:text-destructive"
+                          onClick={() => removeModel(provider.id, model.id)}
+                          title="删除模型"
+                        >
+                          <Trash2 className="h-3.5 w-3.5" />
+                        </Button>
+                      </div>
                     </div>
                   </div>
                 ))}
@@ -178,11 +211,16 @@ export function ModelList({ provider }: ModelListProps) {
         </div>
       )}
 
-      {/* 添加模型对话框 */}
+      {/* 添加/编辑模型对话框 */}
       <AddModelDialog
         open={showAddModel}
-        onOpenChange={setShowAddModel}
+        onOpenChange={(open) => {
+          setShowAddModel(open);
+          if (!open) setEditingModel(null);
+        }}
         providerId={provider.id}
+        providerType={provider.type}
+        editModel={editingModel || undefined}
       />
     </div>
   );
