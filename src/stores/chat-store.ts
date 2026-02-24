@@ -12,6 +12,7 @@ import type {
   ChatModelSettings,
 } from "@/types/chat";
 import { DEFAULT_CHAT_SETTINGS } from "@/types/chat";
+import { useTokenUsageStore } from "@/stores/token-usage-store";
 
 export type ChatConvGroupMode = "time" | "model";
 export type ChatConvSortMode = "created" | "updated";
@@ -138,6 +139,12 @@ export const useChatStore = create<ChatState>((set, get) => ({
         selectedModelId: modelSelection.modelId ?? "",
         loaded: true,
       });
+
+      // 加载各对话的累计 token 消耗
+      const tokenUsageStore = useTokenUsageStore.getState();
+      await Promise.all(
+        conversations.map((c) => tokenUsageStore.loadSessionUsage(c.id)),
+      );
     } catch {
       set({ loaded: true });
     }
@@ -351,8 +358,10 @@ export const useChatStore = create<ChatState>((set, get) => ({
     }));
   },
 
-  finishStream: (requestId) => {
+  finishStream: (requestId, usage) => {
     if (get().activeRequestId !== requestId) return;
+    const state = get();
+    const activeConvId = state.activeConversationId;
     set((s) => ({
       isStreaming: false,
       activeRequestId: null,
@@ -361,12 +370,34 @@ export const useChatStore = create<ChatState>((set, get) => ({
         const msgs = [...c.messages];
         const last = msgs[msgs.length - 1];
         if (last && last.role === "assistant" && last.isStreaming) {
-          msgs[msgs.length - 1] = { ...last, isStreaming: false };
+          msgs[msgs.length - 1] = {
+            ...last,
+            isStreaming: false,
+            isReasoningStreaming: false,
+          };
         }
         return { ...c, messages: msgs, updatedAt: Date.now() };
       }),
     }));
     persistConversations(get().conversations);
+
+    // 记录 Token 消耗
+    if (usage && activeConvId) {
+      const conv = get().conversations.find((c) => c.id === activeConvId);
+      useTokenUsageStore.getState().recordUsage(
+        activeConvId,
+        {
+          totalTokens: usage.totalTokens,
+          inputTokens: usage.promptTokens,
+          outputTokens: usage.completionTokens,
+        },
+        {
+          agentName: "Chat",
+          modelId: conv?.modelId,
+          modelName: conv?.modelId,
+        },
+      );
+    }
   },
 
   handleStreamError: (requestId, error) => {
