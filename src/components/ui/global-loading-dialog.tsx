@@ -8,8 +8,6 @@ import {
 } from "@/components/ui/dialog";
 import { Loader2 } from "lucide-react";
 import { useLoadingStore } from "@/stores/loading-store";
-import { VisuallyHidden } from "@radix-ui/react-visually-hidden";
-
 export function GlobalLoadingDialog() {
   const { visible, title, description } = useLoadingStore();
 
@@ -21,10 +19,10 @@ export function GlobalLoadingDialog() {
         onPointerDownOutside={(e) => e.preventDefault()}
         onInteractOutside={(e) => e.preventDefault()}
       >
-        <VisuallyHidden>
+        <span className="sr-only">
           <DialogTitle>{title}</DialogTitle>
           {description && <DialogDescription>{description}</DialogDescription>}
-        </VisuallyHidden>
+        </span>
         <div className="flex flex-col items-center justify-center gap-4 p-6 rounded-xl bg-card border shadow-lg">
           <div className="relative">
             <div className="h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center">

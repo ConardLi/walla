@@ -39,17 +39,17 @@ export interface TextPart {
   text: string;
 }
 
-export interface ImagePart {
-  type: "image";
-  /** base64 编码的图片数据或图片 URL */
+export interface FilePart {
+  type: "file";
+  /** base64 编码的文件数据或 URL */
   data: string;
   /** MIME 类型，如 image/png, image/jpeg */
-  mimeType?: string;
+  mediaType: string;
 }
 
-export type MessagePart = TextPart | ImagePart;
+export type MessagePart = TextPart | FilePart;
 
-export interface ChatMessage {
+export interface LLMMessage {
   role: "system" | "user" | "assistant";
   content: string | MessagePart[];
 }
@@ -62,7 +62,7 @@ export interface LLMGenerateOptions {
   /** 简单文本提示（与 messages 二选一） */
   prompt?: string;
   /** 多轮对话消息（与 prompt 二选一） */
-  messages?: ChatMessage[];
+  messages?: LLMMessage[];
   /** 系统提示词 */
   system?: string;
   /** 温度参数 (0-2) */

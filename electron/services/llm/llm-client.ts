@@ -13,39 +13,34 @@ import type {
   LLMStreamResult,
   LLMStreamPart,
   LLMUsage,
-  ChatMessage,
+  LLMMessage,
   MessagePart,
 } from "./types";
 
 /**
  * 将统一的 ChatMessage 转换为 AI SDK 的消息格式
  */
-function toSDKMessages(messages: ChatMessage[]) {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function toSDKMessages(messages: LLMMessage[]): any[] {
   return messages.map((msg) => {
+    if (msg.role === "system") {
+      return { role: "system", content: msg.content as string };
+    }
+
     if (typeof msg.content === "string") {
       return { role: msg.role, content: msg.content };
     }
 
-    // 多模态消息：包含文本和图片
     const parts = msg.content.map((part: MessagePart) => {
       if (part.type === "text") {
-        return { type: "text" as const, text: part.text };
+        return { type: "text", text: part.text };
       }
-      if (part.type === "image") {
-        // 判断是 URL 还是 base64
-        if (
-          part.data.startsWith("http://") ||
-          part.data.startsWith("https://")
-        ) {
-          return { type: "image" as const, image: new URL(part.data) };
-        }
-        return {
-          type: "image" as const,
-          image: part.data,
-          mimeType: part.mimeType,
-        };
-      }
-      return { type: "text" as const, text: "" };
+      // file part: 直接传给 AI SDK
+      return {
+        type: "file",
+        data: part.data,
+        mediaType: part.mediaType,
+      };
     });
 
     return { role: msg.role, content: parts };

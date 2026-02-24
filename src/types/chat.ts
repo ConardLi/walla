@@ -4,12 +4,19 @@
 
 export type ChatMessageRole = "user" | "assistant" | "error";
 
+export interface ChatImage {
+  data: string; // base64
+  name: string; // 文件名
+}
+
 export interface ChatMessage {
   id: string;
   role: ChatMessageRole;
   content: string;
   /** 思考过程文本（reasoning/thinking），仅 assistant 消息有 */
   reasoning?: string;
+  /** 图片附件 */
+  images?: ChatImage[];
   timestamp: number;
   isStreaming?: boolean;
   /** 是否正在流式输出思考过程 */

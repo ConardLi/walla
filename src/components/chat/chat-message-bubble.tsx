@@ -9,8 +9,14 @@ import {
   Check,
   Brain,
 } from "lucide-react";
-import type { ChatMessage } from "@/types/chat";
+import { cn } from "@/lib/utils";
 import { MarkdownRenderer } from "@/components/task/message-bubble/markdown-renderer";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 function CopyBtn({ text }: { text: string }) {
   const [copied, setCopied] = useState(false);
@@ -74,6 +80,8 @@ function ThoughtBubble({ message }: { message: ChatMessage }) {
   );
 }
 
+import type { ChatMessage } from "@/types/chat";
+
 const USER_MSG_MAX_LINES = 10;
 
 function UserBubble({ message }: { message: ChatMessage }) {
@@ -89,6 +97,45 @@ function UserBubble({ message }: { message: ChatMessage }) {
   return (
     <div className="group/msg flex flex-col items-end my-3">
       <div className="max-w-[85%] rounded-2xl rounded-br-md bg-accent text-foreground px-4 py-2.5 relative overflow-hidden">
+        {message.images && message.images.length > 0 && (
+          <div className="flex flex-wrap gap-2 mb-2">
+            <TooltipProvider>
+              {message.images.map((img, idx) => (
+                <Tooltip key={idx} delayDuration={0}>
+                  <TooltipTrigger asChild>
+                    <div className="relative group flex items-center gap-2 bg-background border rounded-md p-1.5 hover:bg-accent/50 transition-colors cursor-pointer">
+                      <div className="relative h-6 w-6 rounded overflow-hidden shrink-0 bg-muted/50">
+                        <img
+                          src={img.data}
+                          alt={img.name}
+                          className="h-full w-full object-cover"
+                        />
+                      </div>
+                      <span
+                        className="text-xs text-muted-foreground truncate max-w-[120px]"
+                        title={img.name}
+                      >
+                        {img.name}
+                      </span>
+                    </div>
+                  </TooltipTrigger>
+                  <TooltipContent
+                    side="bottom"
+                    className="p-1.5 bg-background border shadow-xl w-auto max-w-none text-foreground"
+                    sideOffset={8}
+                    hideArrow
+                  >
+                    <img
+                      src={img.data}
+                      alt={img.name}
+                      className="max-w-[300px] max-h-[300px] object-contain rounded-sm"
+                    />
+                  </TooltipContent>
+                </Tooltip>
+              ))}
+            </TooltipProvider>
+          </div>
+        )}
         <p className="text-sm whitespace-pre-wrap leading-relaxed">
           {displayContent}
         </p>

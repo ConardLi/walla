@@ -10,6 +10,7 @@ import type {
   ChatMessage,
   ChatConversation,
   ChatModelSettings,
+  ChatImage,
 } from "@/types/chat";
 import { DEFAULT_CHAT_SETTINGS } from "@/types/chat";
 import { useTokenUsageStore } from "@/stores/token-usage-store";
@@ -73,7 +74,7 @@ interface ChatState {
   /** 更新模型设置 */
   updateSettings: (settings: Partial<ChatModelSettings>) => void;
   /** 发送消息 */
-  sendMessage: (content: string) => Promise<void>;
+  sendMessage: (content: string, images?: ChatImage[]) => Promise<void>;
   /** 追加流式文本到最后一条 assistant 消息 */
   appendStreamChunk: (requestId: string, text: string) => void;
   /** 追加思考过程文本到最后一条 assistant 消息 */
@@ -216,7 +217,7 @@ export const useChatStore = create<ChatState>((set, get) => ({
     });
   },
 
-  sendMessage: async (content) => {
+  sendMessage: async (content, images) => {
     const state = get();
     let conv = state.conversations.find(
       (c) => c.id === state.activeConversationId,
@@ -235,6 +236,7 @@ export const useChatStore = create<ChatState>((set, get) => ({
       id: genId(),
       role: "user",
       content,
+      images,
       timestamp: Date.now(),
     };
 
@@ -269,7 +271,12 @@ export const useChatStore = create<ChatState>((set, get) => ({
     // 构建消息列表用于 API 调用
     const apiMessages: Array<{
       role: "system" | "user" | "assistant";
-      content: string;
+      content:
+        | string
+        | Array<
+            | { type: "text"; text: string }
+            | { type: "file"; data: string; mediaType: string }
+          >;
     }> = [];
     if (state.settings.systemPrompt) {
       apiMessages.push({
@@ -277,12 +284,65 @@ export const useChatStore = create<ChatState>((set, get) => ({
         content: state.settings.systemPrompt,
       });
     }
+
+    const formatMessageContent = (msg: ChatMessage) => {
+      if (!msg.images || msg.images.length === 0) {
+        return msg.content;
+      }
+      return [
+        { type: "text" as const, text: msg.content },
+        ...msg.images.map((img) => {
+          // 从 data URL 中提取 mediaType
+          const match = img.data.match(/^data:([^;]+);base64,(.+)$/);
+          if (match) {
+            return {
+              type: "file" as const,
+              data: match[2], // 纯 base64
+              mediaType: match[1], // e.g. "image/png"
+            };
+          }
+          // fallback: 假定是 png
+          return {
+            type: "file" as const,
+            data: img.data,
+            mediaType: "image/png",
+          };
+        }),
+      ];
+    };
+
     for (const m of conv.messages) {
       if (m.role === "user" || m.role === "assistant") {
-        apiMessages.push({ role: m.role, content: m.content });
+        apiMessages.push({ role: m.role, content: formatMessageContent(m) });
       }
     }
-    apiMessages.push({ role: "user", content });
+
+    // 添加当前消息
+    if (!images || images.length === 0) {
+      apiMessages.push({ role: "user", content });
+    } else {
+      apiMessages.push({
+        role: "user",
+        content: [
+          { type: "text" as const, text: content },
+          ...images.map((img) => {
+            const match = img.data.match(/^data:([^;]+);base64,(.+)$/);
+            if (match) {
+              return {
+                type: "file" as const,
+                data: match[2],
+                mediaType: match[1],
+              };
+            }
+            return {
+              type: "file" as const,
+              data: img.data,
+              mediaType: "image/png",
+            };
+          }),
+        ],
+      });
+    }
 
     // 获取模型配置 —— 从 model-store 中查找
     const { useModelStore } = await import("@/stores/model-store");

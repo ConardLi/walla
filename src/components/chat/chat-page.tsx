@@ -11,8 +11,11 @@ import { ChatModelSelector } from "./chat-model-selector";
 import { ChatSettingsPopover } from "./chat-settings-popover";
 import { RotatingText } from "@/components/ui/rotating-text";
 
+import type { ChatImage } from "@/types/chat";
+
 export function ChatPage() {
   const [input, setInput] = useState("");
+  const [images, setImages] = useState<ChatImage[]>([]);
 
   const loaded = useChatStore((s) => s.loaded);
   const load = useChatStore((s) => s.load);
@@ -60,10 +63,11 @@ export function ChatPage() {
 
   const handleSend = useCallback(() => {
     const text = input.trim();
-    if (!text || isStreaming) return;
+    if ((!text && images.length === 0) || isStreaming) return;
     setInput("");
-    sendMessage(text);
-  }, [input, isStreaming, sendMessage]);
+    setImages([]);
+    sendMessage(text, images);
+  }, [input, images, isStreaming, sendMessage]);
 
   const handleCancel = useCallback(() => {
     cancelStream();
@@ -104,11 +108,13 @@ export function ChatPage() {
           <ChatInput
             input={input}
             setInput={setInput}
+            images={images}
+            setImages={setImages}
             onSend={handleSend}
             onCancel={handleCancel}
             isStreaming={isStreaming}
-            className="max-w-3xl mx-auto"
-            compact
+            className="w-full"
+            compact={true}
           />
         </div>
       </div>
@@ -130,10 +136,12 @@ export function ChatPage() {
           <ChatInput
             input={input}
             setInput={setInput}
+            images={images}
+            setImages={setImages}
             onSend={handleSend}
             onCancel={handleCancel}
             isStreaming={isStreaming}
-            className="max-w-2xl"
+            compact={false}
           />
         </div>
       </div>

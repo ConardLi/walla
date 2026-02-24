@@ -467,7 +467,12 @@ export interface LLMChatStreamRequest {
   /** 对话消息 */
   messages: Array<{
     role: "system" | "user" | "assistant";
-    content: string;
+    content:
+      | string
+      | Array<
+          | { type: "text"; text: string }
+          | { type: "file"; data: string; mediaType: string }
+        >;
   }>;
   /** 温度 */
   temperature?: number;

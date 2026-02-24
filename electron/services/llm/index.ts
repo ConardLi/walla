@@ -30,8 +30,7 @@ export type {
   LLMUsage,
   LLMModelInfo,
   LLMModelListResult,
-  ChatMessage,
+  LLMMessage,
   MessagePart,
   TextPart,
-  ImagePart,
 } from "./types";
