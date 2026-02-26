@@ -96,7 +96,7 @@
     "@types/react": "^19.0.0",
     "@types/react-dom": "^19.0.0",
     "concurrently": "^9.1.0",
-    "electron": "^33.0.0",
+    "electron": "33.4.11",
     "electron-builder": "^25.1.0",
     "esbuild": "^0.27.3",
     "postcss": "^8.4.49",

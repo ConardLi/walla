@@ -1,15 +1,17 @@
 "use client";
 
 import { useEffect, useState, useCallback } from "react";
-import { MessageSquare } from "lucide-react";
+import { MessageSquare, Bot, ArrowRight } from "lucide-react";
 import { useChatStore } from "@/stores/chat-store";
 import { useModelStore } from "@/stores/model-store";
+import { useNavStore } from "@/stores/nav-store";
 import * as ipc from "@/services/ipc-client";
 import { ChatInput } from "./chat-input";
 import { ChatMessageList } from "./chat-message-list";
 import { ChatModelSelector } from "./chat-model-selector";
 import { ChatSettingsPopover } from "./chat-settings-popover";
 import { RotatingText } from "@/components/ui/rotating-text";
+import { Button } from "@/components/ui/button";
 
 import type { ChatImage } from "@/types/chat";
 
@@ -27,12 +29,19 @@ export function ChatPage() {
   const selectedModelId = useChatStore((s) => s.selectedModelId);
 
   const modelLoaded = useModelStore((s) => s.loaded);
+  const providers = useModelStore((s) => s.providers);
+  const setActivePage = useNavStore((s) => s.setActivePage);
 
   const hasMessages = useChatStore((s) => {
     if (!s.activeConversationId) return false;
     const conv = s.conversations.find((c) => c.id === s.activeConversationId);
     return !!conv && conv.messages.length > 0;
   });
+
+  // 检查是否有可用模型
+  const hasEnabledModels = providers.some(
+    (p) => p.enabled && p.apiKey && p.models.some((m) => m.enabled),
+  );
 
   // 加载 store 数据
   useEffect(() => {
@@ -77,6 +86,30 @@ export function ChatPage() {
     return (
       <div className="flex-1 flex items-center justify-center">
         <div className="text-sm text-muted-foreground">加载中...</div>
+      </div>
+    );
+  }
+
+  // 没有可用模型 → 显示友好提示和配置按钮
+  if (!hasEnabledModels) {
+    return (
+      <div className="flex-1 flex flex-col items-center justify-center h-full px-4">
+        <div className="w-full max-w-lg space-y-8 text-center">
+          <div className="space-y-4">
+            <p className="text-muted-foreground">
+              看起来你还没有配置任何模型。为了开始对话，请先前往设置页面添加或启用一个模型服务商。
+            </p>
+          </div>
+
+          <Button
+            size="lg"
+            onClick={() => setActivePage("model")}
+            className="gap-2"
+          >
+            前往配置模型
+            <ArrowRight className="w-4 h-4" />
+          </Button>
+        </div>
       </div>
     );
   }

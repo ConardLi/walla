@@ -31,6 +31,15 @@ export const AGENTS: AgentDefinition[] = [
     doc: "https://opencode.ai/",
   },
   {
+    id: "codex",
+    name: "Codex",
+    cli: ["codex"],
+    npx: ["npx", "-y @zed-industries/codex-acp"],
+    auth: false,
+    icon: "codex.png",
+    doc: "https://developers.openai.com/codex/cli/",
+  },
+  {
     id: "claude-code",
     name: "Claude Code",
     cli: ["claude", "--experimental-acp"],
@@ -80,15 +89,6 @@ export const AGENTS: AgentDefinition[] = [
       baseUrl: "IFLOW_BASE_URL",
       model: "IFLOW_MODEL_NAME",
     },
-  },
-  {
-    id: "codex",
-    name: "Codex",
-    cli: ["codex"],
-    npx: ["npx", "-y @zed-industries/codex-acp"],
-    auth: false,
-    icon: "codex.png",
-    doc: "https://developers.openai.com/codex/cli/",
   },
   {
     id: "goose",
